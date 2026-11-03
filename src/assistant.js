@@ -10,16 +10,20 @@ const skip = new Set([
 
 const extra = {
   "tour-soft": ["ball", "balls"],
-  iron: ["iron"],
-  driver: ["driver"],
-  putter: ["putter"],
-  cart: ["cart"],
   carry: ["carry", "bag", "bags"],
+  "trolley-bag": ["trolley", "bag", "bags"],
+  "staff-bag": ["staff", "bag", "bags"],
+  "push-bag": ["push", "cart", "bag", "bags"],
+  iron: ["iron", "irons", "7iron"],
+  driver: ["driver", "wood"],
+  putter: ["putter"],
+  forged: ["forged", "iron", "irons"],
   glove: ["glove"],
-  polo: ["lime", "polo", "shirt", "shirts"],
-  navy: ["navy", "polo", "shirt", "shirts"],
+  polo: ["lime", "polo", "shirt", "tshirt", "tee"],
+  navy: ["navy", "polo", "shirt", "tshirt", "tee"],
   cap: ["cap", "caps", "hat", "hats", "trucker"],
-  crew: ["crew", "shirt", "shirts"],
+  "links-cap": ["links", "cap", "caps", "hat", "hats"],
+  crew: ["pink", "shirt", "tshirt", "tee"],
 };
 
 function stem(word) {
@@ -66,7 +70,7 @@ function findProducts(text) {
     .sort((a, b) => b.score - a.score);
   if (!scored.length) return [];
   const top = scored[0].score;
-  return scored.filter((entry) => entry.score >= top - 1).slice(0, 6).map((entry) => entry.product);
+  return scored.filter((entry) => entry.score === top).slice(0, 6).map((entry) => entry.product);
 }
 
 function qtyFrom(text) {
@@ -95,7 +99,7 @@ export function reply(question, { items }) {
 
   if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(lower)) {
     return {
-      text: `Hello from ${brand.name}. I quote catalogue prices while the seller is busy. Ask for a shirt, a cap, or a price, or say "add 2 lime polos". The seller confirms the order when they are free.`,
+      text: `Hello from ${brand.name}. I quote catalogue prices while the seller is busy. Ask for a bag, a club, a cap, or a golf t-shirt, or say "add 2 lime golf t-shirts". The seller confirms the order when they are free.`,
     };
   }
 

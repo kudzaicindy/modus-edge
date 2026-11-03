@@ -4,11 +4,11 @@ import { useTitle } from "../useTitle";
 const pillars = [
   {
     title: "Vision",
-    text: "To be the catalogue clubs open when they need a shirt, a cap, or a gift that already looks like it belongs on the course.",
+    text: "To be the catalogue companies open when they need bags, clubs, caps, balls, or a golf t-shirt for the course.",
   },
   {
     title: "Mission",
-    text: "To keep a short line of golf shirts, headwear, bags, and gifts, and to mark them so a club order is straightforward.",
+    text: "To keep bags, clubs, caps, golf t-shirts, balls, and gloves in their own sections, and to mark them so a company order is straightforward.",
   },
   {
     title: "Values",
@@ -36,8 +36,8 @@ export default function About() {
           <div>
             <h2>The desk</h2>
             <p>
-              MODUS-EDGE supplies the corporate golf day: shirts, caps, bags, and a mark put on the piece before it
-              goes out. The desk is at 821 Ferguson Avenue, Greendale.
+              MODUS-EDGE supplies the corporate golf day: bags, clubs, caps, and golf t-shirts, with a mark put on the
+              piece before it goes out. The desk is at 821 Ferguson Avenue, Greendale.
             </p>
             <p>
               Custom marks on shirts and caps are handled as a service. Add the pieces you want, then send the list on

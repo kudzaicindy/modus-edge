@@ -6,14 +6,15 @@ import { useCart } from "../cart";
 
 const productLinks = [
   { to: "/shop", label: "All products" },
-  { to: "/shop?cat=shirts", label: "Golf shirts" },
-  { to: "/shop?cat=headwear", label: "Hats and caps" },
-  { to: "/shop?cat=gear", label: "Bags and gear" },
-  { to: "/shop?cat=gifts", label: "Novelty gifts" },
+  { to: "/shop?cat=shirts", label: "Golf t-shirts" },
+  { to: "/shop?cat=caps", label: "Caps" },
+  { to: "/shop?cat=bags", label: "Bags" },
+  { to: "/shop?cat=clubs", label: "Clubs" },
+  { to: "/shop?cat=gifts", label: "Balls and gloves" },
 ];
 
 const links = [
-  { to: "/shop?cat=shirts", label: "Golf shirts" },
+  { to: "/shop?cat=shirts", label: "Golf t-shirts" },
   { to: "/services", label: "Services" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },

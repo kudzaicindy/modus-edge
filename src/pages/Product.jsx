@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Check, MessageCircle, ShieldCheck } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-import { money, products } from "../data";
+import { money, products, shopFilters } from "../data";
 import { useCart } from "../cart";
 import { useTitle } from "../useTitle";
 
@@ -17,7 +17,7 @@ export default function Product() {
     return (
       <section className="section">
         <div className="wrap narrow empty">
-          <h1>That club isn't on the rack.</h1>
+          <h1>That piece is not in the catalogue.</h1>
           <Link to="/shop" className="btn-lime">
             Back to the shop
           </Link>
@@ -44,7 +44,7 @@ export default function Product() {
             <img src={product.image} alt={product.name} />
           </div>
           <div className="product-copy">
-            <p className="eyebrow">{product.group}</p>
+            <p className="eyebrow">{shopFilters.find((filter) => filter.id === product.group)?.label || product.group}</p>
             <h1>{product.name}</h1>
             <p className="product-price">
               {money(product.price)}

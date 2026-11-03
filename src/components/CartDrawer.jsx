@@ -44,7 +44,7 @@ export function CartDrawer() {
           {items.length === 0 && (
             <div className="empty">
               <h3>Your list is empty.</h3>
-              <p className="muted">Add a shirt, a cap, or a gift. WhatsApp will send that list to the seller.</p>
+              <p className="muted">Add a bag, a club, a cap, or a golf t-shirt. WhatsApp will send that list to the seller.</p>
               <Link to="/shop" className="btn-lime" onClick={close}>
                 Browse the catalogue
               </Link>

@@ -4,19 +4,19 @@ import { useTitle } from "../useTitle";
 const services = [
   {
     title: "In-house branding",
-    text: "A club mark on the premium polos and the trucker cap. Send the artwork and the size run, and the desk confirms the placement before the order is treated as final.",
+    text: "A company mark on the golf t-shirts and the trucker cap. Send the artwork and the size run, and the desk confirms the placement before the order is treated as final.",
     image: "/images/swing.jpg",
     alt: "A lime golf polo mid-swing",
   },
   {
     title: "Digital printing",
     text: "Names, numbers, and a short event line on the activ crew. Built for a society day or a range session, not for a full uniform program.",
-    image: "/images/polo.jpg",
-    alt: "A white performance crew shirt",
+    image: "/images/golf-cap-swing.jpg",
+    alt: "A pink golf t-shirt on the course",
   },
   {
     title: "Club gift sets",
-    text: "A ball pack and a glove packed as a prize or a guest gift. The pieces are the same ones in the novelty gifts catalogue.",
+    text: "A ball pack and a glove packed as a prize or a guest gift. The pieces are the same ones in the balls and gloves section.",
     image: "/images/ball.jpg",
     alt: "A golf ball on the green",
   },
@@ -29,8 +29,8 @@ export default function Services() {
       <div className="wrap">
         <h1 className="catalogue-title">Services offered</h1>
         <p className="lede narrow-copy">
-          Branding sits on the shirts and caps already in the catalogue. Pick the piece, then tell the desk what the
-          mark should say.
+          Branding sits on the shirts and caps already in the catalogue. Pick the piece, then tell the desk what
+          the mark should say.
         </p>
         <div className="service-list">
           {services.map((service) => (

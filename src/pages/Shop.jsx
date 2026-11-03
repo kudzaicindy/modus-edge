@@ -8,10 +8,11 @@ const known = shopFilters.map((filter) => filter.id);
 
 const headings = {
   all: "All products",
-  shirts: "Golf shirts",
-  headwear: "Hats and caps",
-  gear: "Bags and gear",
-  gifts: "Novelty gifts",
+  shirts: "Golf t-shirts",
+  caps: "Caps",
+  bags: "Bags",
+  clubs: "Clubs",
+  gifts: "Balls and gloves",
 };
 
 export default function Shop() {
@@ -65,25 +66,14 @@ export default function Shop() {
   const heading = q ? `Results for “${q}”` : headings[cat];
   const sections = useMemo(() => {
     if (q || sort !== "featured") return [{ title: "", items: list }];
-    if (cat === "shirts" || cat === "all") {
-      const blocks = [
-        {
-          title: "MODUS-EDGE Premium line",
-          items: list.filter((product) => product.group === "shirts" && product.line !== "activ"),
-        },
-        {
-          title: "MODUS-EDGE Activ",
-          items: list.filter((product) => product.line === "activ"),
-        },
-      ];
-      if (cat === "all") {
-        blocks.push(
-          { title: "Hats and caps", items: list.filter((product) => product.group === "headwear") },
-          { title: "Bags and gear", items: list.filter((product) => product.group === "gear") },
-          { title: "Novelty gifts", items: list.filter((product) => product.group === "gifts") }
-        );
-      }
-      return blocks.filter((block) => block.items.length);
+    if (cat === "all") {
+      return [
+        { title: "Golf t-shirts", items: list.filter((product) => product.group === "shirts") },
+        { title: "Caps", items: list.filter((product) => product.group === "caps") },
+        { title: "Bags", items: list.filter((product) => product.group === "bags") },
+        { title: "Clubs", items: list.filter((product) => product.group === "clubs") },
+        { title: "Balls and gloves", items: list.filter((product) => product.group === "gifts") },
+      ].filter((block) => block.items.length);
     }
     return [{ title: "", items: list }];
   }, [q, sort, cat, list]);
@@ -132,7 +122,7 @@ export default function Shop() {
         {list.length === 0 ? (
           <div className="empty">
             <h2>Nothing matches that search.</h2>
-            <p className="muted">Try a ball, a bag, or a club.</p>
+            <p className="muted">Try a bag, a club, a cap, or a golf t-shirt.</p>
             <button type="button" className="btn-dark" onClick={clearSearch}>
               Clear search
             </button>

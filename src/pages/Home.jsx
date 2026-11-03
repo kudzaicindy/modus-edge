@@ -6,76 +6,83 @@ import { useTitle } from "../useTitle";
 
 const slides = [
   {
-    title: "Golf shirts",
+    title: "Golf t-shirts",
     cta: "View more",
     to: "/shop?cat=shirts",
     image: "/images/swing.jpg",
     alt: "A golfer in a lime polo at the top of the backswing",
   },
   {
-    title: "Hats and caps",
+    title: "Caps",
     cta: "Explore",
-    to: "/shop?cat=headwear",
-    image: "/images/cap.jpg",
-    alt: "A white trucker cap",
+    to: "/shop?cat=caps",
+    image: "/images/golf-links.jpg",
+    alt: "A golfer in a course cap on the green",
   },
   {
-    title: "Bags and gear",
+    title: "Bags",
     cta: "Shop now",
-    to: "/shop?cat=gear",
-    image: "/images/fairway.jpg",
-    alt: "A golfer and bag on a links fairway",
+    to: "/shop?cat=bags",
+    image: "/images/bag-field.jpg",
+    alt: "A golf bag on a trolley on the fairway",
   },
   {
-    title: "Novelty gifts",
+    title: "Clubs",
+    cta: "View more",
+    to: "/shop?cat=clubs",
+    image: "/images/clubs.jpg",
+    alt: "A 7-iron and a golf ball on the grass",
+  },
+  {
+    title: "Balls and gloves",
     cta: "View more",
     to: "/shop?cat=gifts",
     image: "/images/ball.jpg",
-    alt: "A golf ball resting on the lip of the cup",
+    alt: "A golf ball on the green",
   },
 ];
 
 const tiles = [
   {
-    title: "Hats and caps",
-    to: "/shop?cat=headwear",
-    image: "/images/cap.jpg",
-    alt: "A white trucker cap",
+    title: "Bags",
+    to: "/shop?cat=bags",
+    image: "/images/bag-cart.jpg",
+    alt: "A black golf bag on a push cart",
   },
   {
-    title: "Golf shirts",
-    to: "/shop?cat=shirts",
-    image: "/images/putt.jpg",
-    alt: "A golfer in a navy polo lining up a putt",
+    title: "Clubs",
+    to: "/shop?cat=clubs",
+    image: "/images/iron-face.jpg",
+    alt: "A set of forged irons",
   },
   {
-    title: "Novelty gifts",
+    title: "Caps",
+    to: "/shop?cat=caps",
+    image: "/images/golf-links.jpg",
+    alt: "A golfer in a course cap lining up a putt",
+  },
+  {
+    title: "Balls and gloves",
     to: "/shop?cat=gifts",
     image: "/images/glove.jpg",
-    alt: "A leather golf glove",
-  },
-  {
-    title: "Custom products",
-    to: "/services",
-    image: "/images/polo.jpg",
-    alt: "A white performance crew shirt",
+    alt: "A golf glove on the course",
   },
 ];
 
 const promos = [
   {
-    title: "Course gear",
+    title: "Clubs",
     cta: "Shop now",
-    to: "/shop?cat=gear",
-    image: "/images/cart1.jpg",
-    alt: "A course cart with a staff bag",
+    to: "/shop?cat=clubs",
+    image: "/images/player.jpg",
+    alt: "A golfer swinging a driver",
   },
   {
-    title: "Gift sets",
+    title: "Caps",
     cta: "View more",
-    to: "/shop?cat=gifts",
-    image: "/images/ball.jpg",
-    alt: "A golf ball on the green",
+    to: "/shop?cat=caps",
+    image: "/images/cap.jpg",
+    alt: "A white trucker cap",
   },
 ];
 
