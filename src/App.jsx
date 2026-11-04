@@ -12,6 +12,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
 import Terms from "./pages/Terms";
+import Admin from "./pages/Admin";
 import { Blog, Post } from "./pages/Blog";
 import { useTitle } from "./useTitle";
 
@@ -49,10 +50,13 @@ function NotFound() {
 }
 
 export default function App() {
+  const location = useLocation();
+  const admin = location.pathname.startsWith("/admin");
+
   return (
     <>
       <ScrollTop />
-      <Header />
+      {!admin && <Header />}
       <main id="main">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -66,12 +70,17 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<Post />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <Footer />
-      <CartDrawer />
-      <Toast />
+      {!admin && (
+        <>
+          <Footer />
+          <CartDrawer />
+          <Toast />
+        </>
+      )}
     </>
   );
 }

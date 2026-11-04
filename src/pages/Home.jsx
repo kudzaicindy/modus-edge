@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "../components/ProductCard";
-import { collections, partners, products } from "../data";
+import { useCatalog } from "../catalog";
+import { collections, partners } from "../data";
 import { useTitle } from "../useTitle";
 
 const pickIds = ["polo", "piped-polo", "handle-bottle", "tour-visor"];
-const picks = pickIds.map((id) => products.find((product) => product.id === id)).filter(Boolean);
 const linePreview = collections.slice(0, 4);
 
 const steps = [
@@ -25,6 +25,8 @@ const steps = [
 
 export default function Home() {
   useTitle();
+  const { products } = useCatalog();
+  const picks = pickIds.map((id) => products.find((product) => product.id === id)).filter(Boolean);
 
   return (
     <>

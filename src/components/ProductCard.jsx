@@ -38,11 +38,13 @@ export default function ProductCard({ product, colorName }) {
           <p className="price">
             {money(product.price)}
             {product.compareAt && <s>{money(product.compareAt)}</s>}
+            {product.stock === 0 && <span className="card-stock">Out</span>}
           </p>
           <button
             type="button"
             className="add-btn"
             aria-label={`Add ${product.name} to the list`}
+            disabled={product.stock === 0}
             onClick={() => add(product.id, 1, chosen?.name, product.sizes?.[0])}
           >
             <ShoppingBag size={16} />

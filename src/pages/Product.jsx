@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import ColorPalette from "../components/ColorPalette";
 import ProductCard from "../components/ProductCard";
-import { findProduct, groupsFor, labelForGroup, money, products, resolveCat } from "../data";
+import { useCatalog } from "../catalog";
+import { groupsFor, labelForGroup, money, resolveCat } from "../data";
 import { useCart } from "../cart";
 import { useTitle } from "../useTitle";
 
@@ -12,6 +13,7 @@ export default function Product() {
   const { id } = useParams();
   const [params] = useSearchParams();
   const colorQuery = params.get("color") || "";
+  const { findProduct, products, revision } = useCatalog();
   const product = findProduct(id);
   const aliasColor = { navy: "Navy", crew: "Pink" }[id] || "";
   useTitle(product ? product.name : "Product");
@@ -46,7 +48,7 @@ export default function Product() {
     setShot(shotAt >= 0 ? shotAt : 0);
   }, [id, colorQuery, product, aliasColor, thumbs]);
 
-  if (!product) {
+  if (!product || product.hidden) {
     return (
       <section className="section product-page">
         <div className="wrap narrow empty">
@@ -58,6 +60,8 @@ export default function Product() {
       </section>
     );
   }
+
+  const outOfStock = product.stock === 0;
 
   const bucket = groupsFor(resolveCat(product.group)) || [product.group];
   const same = products.filter((item) => bucket.includes(item.group) && item.id !== product.id);
@@ -189,12 +193,19 @@ export default function Product() {
                 <button
                   type="button"
                   className="btn-lime"
+                  disabled={outOfStock}
                   onClick={() => add(product.id, qty, chosen?.name, product.sizes?.[size])}
                 >
-                  Add to cart
+                  {outOfStock ? "Out of stock" : "Add to cart"}
                 </button>
               </div>
-              <p className="buy-note">MOQ 20 · Branding on request · Confirm on WhatsApp</p>
+              <p className="buy-note">
+                {outOfStock
+                  ? "Currently out of stock"
+                  : product.stock != null
+                    ? `${product.stock} in stock · MOQ 20 · Confirm on WhatsApp`
+                    : "MOQ 20 · Branding on request · Confirm on WhatsApp"}
+              </p>
             </div>
 
             {facts.length > 0 && (

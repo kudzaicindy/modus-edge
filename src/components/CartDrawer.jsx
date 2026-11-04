@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { X } from "lucide-react";
-import { findProduct, money } from "../data";
+import { useCatalog } from "../catalog";
+import { money } from "../data";
 import { useCart } from "../cart";
 import { listMessage, whatsappHref } from "../order";
 
@@ -143,6 +144,7 @@ export function CartDrawer() {
 
 export function Toast() {
   const { toast, setToast, setOpen, open } = useCart();
+  const { findProduct } = useCatalog();
   if (!toast || open) return null;
   const product = findProduct(toast.id || toast);
   if (!product) return null;

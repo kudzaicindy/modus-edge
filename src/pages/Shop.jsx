@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import { groupsFor, isPaintedColor, products, resolveCat, shopFilters, swatchIsLight, swatchStyle } from "../data";
+import { useCatalog } from "../catalog";
+import { groupsFor, isPaintedColor, resolveCat, shopFilters, swatchIsLight, swatchStyle } from "../data";
 import { useTitle } from "../useTitle";
 
 const sections = shopFilters.filter((filter) => filter.id !== "all");
@@ -20,6 +21,7 @@ function matchesColor(optionName, filter) {
 
 export default function Shop() {
   useTitle("Shop");
+  const { products, revision } = useCatalog();
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") || "";
   const cat = resolveCat(searchParams.get("cat") || "all");
@@ -48,7 +50,7 @@ export default function Shop() {
     if (sort === "low") sorted.sort((a, b) => a.price - b.price);
     if (sort === "high") sorted.sort((a, b) => b.price - a.price);
     return sorted;
-  }, [q, cat, sort]);
+  }, [products, revision, q, cat, sort]);
 
   const colorOptions = useMemo(() => {
     const names = new Set();
@@ -201,10 +203,10 @@ export default function Shop() {
                   <span>{block.items.length}</span>
                 </div>
               )}
-              <div className="grid">
+              <div className="grid" key={`grid-${revision}-${block.title || "list"}`}>
                 {block.items.map((tile) => (
                   <ProductCard
-                    key={`${tile.product.id}-${tile.colorName || "all"}`}
+                    key={`${tile.product.id}-${tile.colorName || "all"}-${tile.product.price}-${tile.product.stock ?? "x"}-${revision}`}
                     product={tile.product}
                     colorName={tile.colorName}
                   />

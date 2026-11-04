@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { findProduct } from "./data";
+import { useCatalog } from "./catalog";
 
 const CartContext = createContext(null);
 const STORAGE_KEY = "modus-edge-cart";
@@ -15,6 +15,7 @@ function load() {
 }
 
 export function CartProvider({ children }) {
+  const { findProduct, revision } = useCatalog();
   const [items, setItems] = useState(load);
   const [open, setOpen] = useState(false);
   const [toast, setToast] = useState(null);
@@ -33,8 +34,8 @@ export function CartProvider({ children }) {
     () =>
       items
         .map((item) => ({ ...item, product: findProduct(item.id) }))
-        .filter((item) => item.product),
-    [items]
+        .filter((item) => item.product && !item.product.hidden),
+    [items, findProduct, revision]
   );
 
   const count = detailed.reduce((sum, item) => sum + item.qty, 0);
