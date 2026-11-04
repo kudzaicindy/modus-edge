@@ -10,13 +10,27 @@ export async function connectDb(uri = process.env.MONGODB_URI) {
   if (!uri) {
     throw new Error("MONGODB_URI is not set");
   }
-  if (cached.conn) return cached.conn;
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(uri, {
-      bufferCommands: false,
-      serverSelectionTimeoutMS: 8000,
-    });
+  if (cached.conn) {
+    if (mongoose.connection.readyState === 1) return cached.conn;
+    cached.conn = null;
+    cached.promise = null;
   }
-  cached.conn = await cached.promise;
-  return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(uri, {
+        bufferCommands: false,
+        serverSelectionTimeoutMS: 12000,
+        connectTimeoutMS: 12000,
+      })
+      .then((conn) => {
+        cached.conn = conn;
+        return conn;
+      })
+      .catch((error) => {
+        cached.promise = null;
+        cached.conn = null;
+        throw error;
+      });
+  }
+  return cached.promise;
 }

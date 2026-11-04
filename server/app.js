@@ -1,10 +1,15 @@
 import cors from "cors";
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import { authenticateAdmin } from "./adminModel.js";
 import { connectDb } from "./db.js";
 import { Catalog, emptyCatalog, getCatalogDoc, toState } from "./catalogModel.js";
 import { Product, productPayload } from "./productModel.js";
 import { isSeedProduct } from "./seedIds.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const distDir = path.resolve(__dirname, "../dist");
 
 async function listProducts() {
   const rows = await Product.find({}).lean();
@@ -226,6 +231,15 @@ app.post("/api/catalog/seed", withDb, requireAdmin, async (_req, res) => {
     console.error(error);
     res.status(500).json({ error: "Failed to seed catalogue" });
   }
+});
+
+app.use(express.static(distDir));
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(distDir, "index.html"), (error) => {
+    if (error) next();
+  });
 });
 
 app.use((err, _req, res, _next) => {

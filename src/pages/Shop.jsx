@@ -63,18 +63,15 @@ export default function Shop() {
   }, [list]);
 
   const tiles = useMemo(() => {
-    if (!inLine && !color) {
-      return list.map((product) => ({ product, colorName: "" }));
-    }
-    const out = [];
-    list.forEach((product) => {
-      ways(product).forEach((option) => {
-        if (!matchesColor(option.name, color)) return;
-        out.push({ product, colorName: option.name || "" });
-      });
-    });
-    return out;
-  }, [list, inLine, color]);
+    return list
+      .map((product) => {
+        if (!color) return { product, colorName: "" };
+        const match = ways(product).find((option) => matchesColor(option.name, color));
+        if (!match) return null;
+        return { product, colorName: match.name || "" };
+      })
+      .filter(Boolean);
+  }, [list, color]);
 
   function setCat(id) {
     const next = new URLSearchParams(searchParams);
@@ -209,6 +206,7 @@ export default function Shop() {
                     key={`${tile.product.id}-${tile.colorName || "all"}-${tile.product.price}-${tile.product.stock ?? "x"}-${revision}`}
                     product={tile.product}
                     colorName={tile.colorName}
+                    showPalette
                   />
                 ))}
               </div>
