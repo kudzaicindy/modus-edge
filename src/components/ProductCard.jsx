@@ -26,7 +26,7 @@ function ShopSwatches({ colors, tone, onChange }) {
   );
 }
 
-export default function ProductCard({ product, colorName, showPalette = false }) {
+export default function ProductCard({ product, colorName, showPalette = false, compact = false }) {
   const { add } = useCart();
   const colors = product.colors || [];
   const initial = colors.findIndex((option) => option.name === colorName);
@@ -38,52 +38,68 @@ export default function ProductCard({ product, colorName, showPalette = false })
     : `/product/${product.id}`;
   const catalogItem = labelForGroup(product.group);
   const outOfStock = product.stock === 0;
+  const useShopCard = showPalette || compact;
+  const previewColors = colors.filter((option) => option?.name && isPaintedColor(option.name)).slice(0, 5);
 
   useEffect(() => {
     setTone(initial >= 0 ? initial : 0);
   }, [product.id, initial]);
 
-  if (showPalette) {
+  if (useShopCard) {
     return (
-      <article className={`shop-card${outOfStock ? " is-out" : ""}`}>
-        <Link to={href} className="shop-card-media" tabIndex={-1} aria-hidden="true">
+      <article className={`shop-card${compact ? " shop-card-compact" : ""}${outOfStock ? " is-out" : ""}`}>
+        <Link to={href} className="shop-card-media" aria-label={product.name}>
           {product.badge ? <span className="shop-card-badge">{product.badge}</span> : null}
-          <img src={photo} alt="" />
+          <span className="shop-card-stage">
+            <img src={photo} alt={chosen?.name ? `${product.name}, ${chosen.name}` : product.name} />
+          </span>
         </Link>
 
         <div className="shop-card-body">
-          <header className="shop-card-head">
-            <p className="shop-card-type">{catalogItem}</p>
-            <h3 className="shop-card-name">
-              <Link to={href}>{product.name}</Link>
-            </h3>
-          </header>
+          <p className="shop-card-type">{catalogItem}</p>
+          <h3 className="shop-card-name">
+            <Link to={href}>{product.name}</Link>
+          </h3>
 
-          {colors.length > 0 ? (
+          {showPalette && colors.length > 0 ? (
             <div className="shop-card-colors">
               <ShopSwatches colors={colors} tone={tone} onChange={setTone} />
               {chosen?.name ? <span className="shop-card-tone">{chosen.name}</span> : null}
             </div>
-          ) : (
-            <div className="shop-card-colors shop-card-colors-empty" aria-hidden="true" />
-          )}
+          ) : null}
 
-          <footer className="shop-card-foot">
+          {compact && previewColors.length > 0 ? (
+            <div className="shop-card-dots" aria-label="Available colours">
+              {previewColors.map((option) => (
+                <span
+                  key={option.name}
+                  className={`dot${swatchIsLight(option.name) ? " light" : ""}`}
+                  style={swatchStyle(option.name)}
+                  title={option.name}
+                />
+              ))}
+              {colors.length > previewColors.length ? (
+                <span className="shop-card-more">+{colors.length - previewColors.length}</span>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="shop-card-foot">
             <div className="shop-card-amount">
-              <span className="shop-card-price">{money(product.price)}</span>
+              <strong className="shop-card-price">{money(product.price)}</strong>
               {product.compareAt ? <s>{money(product.compareAt)}</s> : null}
-              {outOfStock ? <span className="shop-card-stock">Out of stock</span> : null}
+              {outOfStock ? <span className="shop-card-stock">Out</span> : null}
             </div>
             <button
               type="button"
               className="shop-card-add"
-              aria-label={`Add ${product.name} to the list`}
+              aria-label={`Add ${product.name}`}
               disabled={outOfStock}
               onClick={() => add(product.id, 1, chosen?.name, product.sizes?.[0])}
             >
-              <Plus size={18} strokeWidth={2.4} />
+              <Plus size={16} strokeWidth={2.5} />
             </button>
-          </footer>
+          </div>
         </div>
       </article>
     );

@@ -66,7 +66,7 @@ export default function Product() {
   const bucket = groupsFor(resolveCat(product.group)) || [product.group];
   const same = products.filter((item) => bucket.includes(item.group) && item.id !== product.id);
   const extra = products.filter((item) => !bucket.includes(item.group));
-  const related = [...same, ...extra].slice(0, 4);
+  const related = [...same, ...extra].slice(0, 8);
   const chosen = product.colors?.[color];
   const cat = resolveCat(product.group);
   const photo = thumbs[shot] || chosen?.image || product.image;
@@ -222,17 +222,17 @@ export default function Product() {
         </div>
 
         {related.length > 0 && (
-          <>
+          <div className="related-block">
             <div className="section-head related-head">
               <p className="eyebrow">Also in stock</p>
               <h2>More from the catalogue</h2>
             </div>
-            <div className="grid product-related">
+            <div className="product-related">
               {related.map((item) => (
-                <ProductCard key={item.id} product={item} />
+                <ProductCard key={`${item.id}-${revision}`} product={item} compact />
               ))}
             </div>
-          </>
+          </div>
         )}
       </div>
     </section>
