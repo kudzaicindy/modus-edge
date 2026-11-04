@@ -9,7 +9,7 @@ import { Product, productPayload } from "./productModel.js";
 import { isSeedProduct } from "./seedIds.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir = path.resolve(__dirname, "../dist");
+const distDir = path.resolve(__dirname, "../build");
 
 async function listProducts() {
   const rows = await Product.find({}).lean();
