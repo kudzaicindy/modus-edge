@@ -9,7 +9,7 @@ export default function Collections() {
       <div className="wrap">
         <h1 className="catalogue-title">All products</h1>
         <p className="lede narrow-copy">
-          Golf t-shirts, caps, bags, clubs, and balls and gloves. Each line is its own section.
+          Golf wear, shoes, bags, clubs, drinkware, and gifts, each in its own section.
         </p>
         <div className="coll-grid">
           {collections.map((collection) => (

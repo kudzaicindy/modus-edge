@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { products } from "./data";
+import { findProduct } from "./data";
 
 const CartContext = createContext(null);
 const STORAGE_KEY = "modus-edge-cart";
@@ -32,7 +32,7 @@ export function CartProvider({ children }) {
   const detailed = useMemo(
     () =>
       items
-        .map((item) => ({ ...item, product: products.find((product) => product.id === item.id) }))
+        .map((item) => ({ ...item, product: findProduct(item.id) }))
         .filter((item) => item.product),
     [items]
   );
@@ -40,26 +40,33 @@ export function CartProvider({ children }) {
   const count = detailed.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = detailed.reduce((sum, item) => sum + item.qty * item.product.price, 0);
 
-  function add(id, qty = 1) {
+  function sameLine(item, id, color, size) {
+    return item.id === id && (item.color || "") === (color || "") && (item.size || "") === (size || "");
+  }
+
+  function add(id, qty = 1, color, size) {
+    const nextQty = Math.min(8, qty);
     setItems((prev) => {
-      const found = prev.find((item) => item.id === id);
-      if (!found) return [...prev, { id, qty: Math.min(8, qty) }];
+      const found = prev.find((item) => sameLine(item, id, color, size));
+      if (!found) {
+        return [...prev, { id, qty: nextQty, ...(color ? { color } : {}), ...(size ? { size } : {}) }];
+      }
       return prev.map((item) =>
-        item.id === id ? { ...item, qty: Math.min(8, item.qty + qty) } : item
+        sameLine(item, id, color, size) ? { ...item, qty: Math.min(8, item.qty + qty) } : item
       );
     });
-    setToast(id);
+    setToast({ id, qty: nextQty, color: color || "", size: size || "" });
   }
 
-  function update(id, qty) {
+  function update(id, qty, color, size) {
     setItems((prev) => {
-      if (qty < 1) return prev.filter((item) => item.id !== id);
-      return prev.map((item) => (item.id === id ? { ...item, qty: Math.min(8, qty) } : item));
+      if (qty < 1) return prev.filter((item) => !sameLine(item, id, color, size));
+      return prev.map((item) => (sameLine(item, id, color, size) ? { ...item, qty: Math.min(8, qty) } : item));
     });
   }
 
-  function remove(id) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  function remove(id, color, size) {
+    setItems((prev) => prev.filter((item) => !sameLine(item, id, color, size)));
   }
 
   function clear() {

@@ -32,7 +32,7 @@ export default function About() {
           ))}
         </div>
         <div className="about-band">
-          <img src="/images/portrait.jpg" alt="A golfer looking down the fairway" />
+          <img src="/images/polo-piped.png" alt="Piped golf polos on the rail" />
           <div>
             <h2>The desk</h2>
             <p>

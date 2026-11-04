@@ -1,9 +1,46 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { X } from "lucide-react";
-import { money, products } from "../data";
+import { findProduct, money } from "../data";
 import { useCart } from "../cart";
 import { listMessage, whatsappHref } from "../order";
+
+function linePhoto(item) {
+  return item.product.colors?.find((option) => option.name === item.color)?.image || item.product.image;
+}
+
+function CartRow({ item, update, remove }) {
+  return (
+    <tr className="cart-row">
+      <td className="cart-item">
+        <img src={linePhoto(item)} alt="" />
+        <div>
+          <strong>{item.product.name}</strong>
+          {item.size ? <span className="muted">Size {item.size}</span> : null}
+        </div>
+      </td>
+      <td className="cart-color">{item.color || "—"}</td>
+      <td className="cart-stock">
+        <span className="stock-pill">In stock</span>
+      </td>
+      <td className="cart-qty">
+        <div className="stepper">
+          <button type="button" onClick={() => update(item.id, item.qty - 1, item.color, item.size)} aria-label="Decrease quantity">
+            −
+          </button>
+          <span>{item.qty}</span>
+          <button type="button" onClick={() => update(item.id, item.qty + 1, item.color, item.size)} aria-label="Increase quantity">
+            +
+          </button>
+        </div>
+        <button type="button" className="linkish" onClick={() => remove(item.id, item.color, item.size)}>
+          Remove
+        </button>
+      </td>
+      <td className="cart-price">{money(item.product.price * item.qty)}</td>
+    </tr>
+  );
+}
 
 export function CartDrawer() {
   const { items, subtotal, open, setOpen, update, remove } = useCart();
@@ -44,7 +81,7 @@ export function CartDrawer() {
           {items.length === 0 && (
             <div className="empty">
               <h3>Your list is empty.</h3>
-              <p className="muted">Add a bag, a club, a cap, or a golf t-shirt. WhatsApp will send that list to the seller.</p>
+              <p className="muted">Add a bag, a club, a bottle, a towel, or a golf t-shirt. WhatsApp will send that list to the seller.</p>
               <Link to="/shop" className="btn-lime" onClick={close}>
                 Browse the catalogue
               </Link>
@@ -52,33 +89,30 @@ export function CartDrawer() {
           )}
 
           {items.length > 0 && (
-            <ul className="lines">
-              {items.map((item) => (
-                <li key={item.id} className="line">
-                  <img src={item.product.image} alt="" />
-                  <div>
-                    <strong>{item.product.name}</strong>
-                    <p className="muted">{money(item.product.price)}</p>
-                    <div className="line-actions">
-                      <div className="stepper">
-                        <button type="button" onClick={() => update(item.id, item.qty - 1)} aria-label="Decrease quantity">
-                          −
-                        </button>
-                        <span>{item.qty}</span>
-                        <button type="button" onClick={() => update(item.id, item.qty + 1)} aria-label="Increase quantity">
-                          +
-                        </button>
-                      </div>
-                      <button type="button" className="linkish" onClick={() => remove(item.id)}>
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="cart-table-wrap">
+              <table className="cart-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Colour</th>
+                    <th>Stock</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item) => (
+                    <CartRow
+                      key={`${item.id}-${item.color || ""}-${item.size || ""}`}
+                      item={item}
+                      update={update}
+                      remove={remove}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-
         </div>
 
         {items.length > 0 && (
@@ -110,11 +144,24 @@ export function CartDrawer() {
 export function Toast() {
   const { toast, setToast, setOpen, open } = useCart();
   if (!toast || open) return null;
-  const product = products.find((item) => item.id === toast);
+  const product = findProduct(toast.id || toast);
   if (!product) return null;
+  const color = toast.color || "";
+  const photo = product.colors?.find((option) => option.name === color)?.image || product.image;
+  const qty = toast.qty || 1;
+
   return (
-    <div className="toast" role="status">
-      <span>Added {product.name} to your list</span>
+    <div className="toast toast-row" role="status">
+      <img src={photo} alt="" />
+      <div className="toast-copy">
+        <strong>{product.name}</strong>
+        <span>
+          {color ? `${color} · ` : ""}
+          <em className="stock-inline">In stock</em>
+          {` · ×${qty}`}
+        </span>
+      </div>
+      <span className="toast-price">{money(product.price * qty)}</span>
       <button
         type="button"
         onClick={() => {

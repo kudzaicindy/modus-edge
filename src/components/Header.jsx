@@ -2,19 +2,17 @@ import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, Menu, ShoppingBag, X } from "lucide-react";
 import Mark from "./Mark";
+import { shopFilters } from "../data";
 import { useCart } from "../cart";
 
 const productLinks = [
   { to: "/shop", label: "All products" },
-  { to: "/shop?cat=shirts", label: "Golf t-shirts" },
-  { to: "/shop?cat=caps", label: "Caps" },
-  { to: "/shop?cat=bags", label: "Bags" },
-  { to: "/shop?cat=clubs", label: "Clubs" },
-  { to: "/shop?cat=gifts", label: "Balls and gloves" },
+  ...shopFilters
+    .filter((filter) => filter.id !== "all")
+    .map((filter) => ({ to: `/shop?cat=${filter.id}`, label: filter.label })),
 ];
 
 const links = [
-  { to: "/shop?cat=shirts", label: "Golf t-shirts" },
   { to: "/services", label: "Services" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
@@ -25,6 +23,7 @@ export default function Header() {
   const [menu, setMenu] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const location = useLocation();
+  const homeHot = location.pathname === "/";
   const shopHot = location.pathname.startsWith("/shop") || location.pathname.startsWith("/product");
 
   useEffect(() => {
@@ -48,12 +47,21 @@ export default function Header() {
           >
             {menu ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <NavLink to="/" className="logo" end>
+          <NavLink to="/" className="logo logo-desktop" end>
             <Mark />
             MODUS-EDGE
           </NavLink>
         </div>
+
+        <NavLink to="/" className="logo logo-mobile" end>
+          <Mark />
+          MODUS-EDGE
+        </NavLink>
+
         <nav className="desktop-nav" aria-label="Primary">
+          <NavLink to="/" end className={homeHot ? "active" : undefined}>
+            Home
+          </NavLink>
           <div
             className="nav-drop"
             onMouseEnter={() => setProductsOpen(true)}
@@ -83,6 +91,7 @@ export default function Header() {
             </NavLink>
           ))}
         </nav>
+
         <div className="header-actions">
           <button
             type="button"
@@ -97,6 +106,9 @@ export default function Header() {
       </div>
       {menu && (
         <nav className="mobile-nav" aria-label="Mobile">
+          <NavLink to="/" end>
+            Home
+          </NavLink>
           <p>Products</p>
           {productLinks.map((link) => (
             <NavLink key={link.label} to={link.to}>

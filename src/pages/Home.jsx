@@ -1,185 +1,145 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { partners } from "../data";
+import { ArrowRight } from "lucide-react";
+import ProductCard from "../components/ProductCard";
+import { collections, partners, products } from "../data";
 import { useTitle } from "../useTitle";
 
-const slides = [
-  {
-    title: "Golf t-shirts",
-    cta: "View more",
-    to: "/shop?cat=shirts",
-    image: "/images/swing.jpg",
-    alt: "A golfer in a lime polo at the top of the backswing",
-  },
-  {
-    title: "Caps",
-    cta: "Explore",
-    to: "/shop?cat=caps",
-    image: "/images/golf-links.jpg",
-    alt: "A golfer in a course cap on the green",
-  },
-  {
-    title: "Bags",
-    cta: "Shop now",
-    to: "/shop?cat=bags",
-    image: "/images/bag-field.jpg",
-    alt: "A golf bag on a trolley on the fairway",
-  },
-  {
-    title: "Clubs",
-    cta: "View more",
-    to: "/shop?cat=clubs",
-    image: "/images/clubs.jpg",
-    alt: "A 7-iron and a golf ball on the grass",
-  },
-  {
-    title: "Balls and gloves",
-    cta: "View more",
-    to: "/shop?cat=gifts",
-    image: "/images/ball.jpg",
-    alt: "A golf ball on the green",
-  },
-];
+const pickIds = ["polo", "piped-polo", "handle-bottle", "tour-visor"];
+const picks = pickIds.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+const linePreview = collections.slice(0, 4);
 
-const tiles = [
+const steps = [
   {
-    title: "Bags",
-    to: "/shop?cat=bags",
-    image: "/images/bag-cart.jpg",
-    alt: "A black golf bag on a push cart",
+    title: "MOQ 20",
+    text: "Bulk from twenty pieces, one style or mixed across the catalogue.",
   },
   {
-    title: "Clubs",
-    to: "/shop?cat=clubs",
-    image: "/images/iron-face.jpg",
-    alt: "A set of forged irons",
+    title: "Branding",
+    text: "Print, embroidery, or a small mark on the blank face of each line.",
   },
   {
-    title: "Caps",
-    to: "/shop?cat=caps",
-    image: "/images/golf-links.jpg",
-    alt: "A golfer in a course cap lining up a putt",
-  },
-  {
-    title: "Balls and gloves",
-    to: "/shop?cat=gifts",
-    image: "/images/glove.jpg",
-    alt: "A golf glove on the course",
-  },
-];
-
-const promos = [
-  {
-    title: "Clubs",
-    cta: "Shop now",
-    to: "/shop?cat=clubs",
-    image: "/images/player.jpg",
-    alt: "A golfer swinging a driver",
-  },
-  {
-    title: "Caps",
-    cta: "View more",
-    to: "/shop?cat=caps",
-    image: "/images/cap.jpg",
-    alt: "A white trucker cap",
+    title: "WhatsApp",
+    text: "Build a list, send it, and the desk confirms totals and artwork.",
   },
 ];
 
 export default function Home() {
   useTitle();
-  const [index, setIndex] = useState(0);
-  const [promo, setPromo] = useState(0);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (media.matches) return undefined;
-    const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % slides.length);
-    }, 4500);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  const slide = slides[index];
-  const band = promos[promo];
 
   return (
     <>
-      <section className="stage" aria-roledescription="carousel" aria-label="Featured catalogues">
-        {slides.map((item, itemIndex) => (
-          <img
-            key={item.title}
-            className={itemIndex === index ? "stage-photo on" : "stage-photo"}
-            src={item.image}
-            alt={itemIndex === index ? item.alt : ""}
-          />
-        ))}
-        <div className="stage-shade" />
-        <div className="stage-copy">
-          <h1>{slide.title}</h1>
-          <Link to={slide.to} className="stage-cta">
-            {slide.cta}
-          </Link>
-        </div>
-        <div className="stage-nav">
-          <button
-            type="button"
-            aria-label="Previous slide"
-            onClick={() => setIndex((current) => (current - 1 + slides.length) % slides.length)}
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <button
-            type="button"
-            aria-label="Next slide"
-            onClick={() => setIndex((current) => (current + 1) % slides.length)}
-          >
-            <ChevronRight size={22} />
-          </button>
-        </div>
-      </section>
-
-      <section className="split" aria-label="Shop by category">
-        {tiles.map((tile) => (
-          <article key={tile.title} className="split-card">
-            <img src={tile.image} alt={tile.alt} />
-            <div className="split-copy">
-              <h2>{tile.title}</h2>
-              <Link to={tile.to}>Explore</Link>
+      <section className="store-hero">
+        <img className="store-hero-bg" src="/images/hero-golf-course.jpg" alt="" />
+        <div className="store-hero-shade" aria-hidden="true" />
+        <div className="store-hero-inner">
+          <div className="store-hero-copy">
+            <p className="store-brand-mark">MODUS-EDGE</p>
+            <h1>Kit the club. Brand the pack.</h1>
+            <p>
+              Golf wear and corporate gifts, ready for your mark. Bulk from 20 pieces, send the list on WhatsApp.
+            </p>
+            <div className="store-hero-actions">
+              <Link to="/shop" className="btn-shop">
+                Shop the catalogue
+              </Link>
+              <Link to="/services" className="btn-ghost">
+                Branding
+              </Link>
             </div>
-          </article>
-        ))}
+          </div>
+          <div className="store-hero-product" aria-hidden="true">
+            <img src="/images/hero-polo.png" alt="" />
+          </div>
+        </div>
       </section>
 
-      <section className="promo" aria-label="More catalogues">
-        <img src={band.image} alt={band.alt} />
-        <div className="stage-shade" />
-        <div className="stage-copy">
-          <h2>{band.title}</h2>
-          <Link to={band.to} className="stage-cta">
-            {band.cta}
-          </Link>
+      <section className="store-steps" aria-label="How orders work">
+        <div className="wrap store-steps-row">
+          {steps.map((step) => (
+            <article key={step.title} className="store-step">
+              <h2>{step.title}</h2>
+              <p>{step.text}</p>
+            </article>
+          ))}
         </div>
-        <div className="stage-nav">
-          <button
-            type="button"
-            aria-label="Previous promotion"
-            onClick={() => setPromo((current) => (current - 1 + promos.length) % promos.length)}
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <button
-            type="button"
-            aria-label="Next promotion"
-            onClick={() => setPromo((current) => (current + 1) % promos.length)}
-          >
-            <ChevronRight size={22} />
-          </button>
+      </section>
+
+      <section className="section store-shop">
+        <div className="wrap">
+          <div className="section-head store-shop-head">
+            <div>
+              <p className="eyebrow">Catalogue</p>
+              <h2>Shop by line</h2>
+              <p>Pick a line and open the stock list.</p>
+            </div>
+          </div>
+          <div className="store-lines store-lines-preview">
+            {linePreview.map((collection) => (
+              <Link key={collection.title} to={collection.to} className="store-line">
+                <div className="store-line-media">
+                  <img src={collection.image} alt="" />
+                </div>
+                <div className="store-line-copy">
+                  <h3>{collection.title}</h3>
+                  <p>{collection.text}</p>
+                </div>
+              </Link>
+            ))}
+            <Link to="/shop" className="store-line store-line-more">
+              <div className="store-line-media store-line-arrow">
+                <span className="store-go-label">Go shopping</span>
+                <span className="store-go-icon" aria-hidden="true">
+                  <ArrowRight size={22} strokeWidth={2.25} />
+                </span>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="section store-picks">
+        <div className="wrap">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">On the rail</p>
+              <h2>From the catalogue</h2>
+              <p>Polos, a tour visor, and a handle bottle, ready to brand.</p>
+            </div>
+            <Link to="/shop" className="btn-dark">
+              See more
+            </Link>
+          </div>
+          <div className="grid">
+            {picks.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section store-brand-wrap">
+        <div className="wrap">
+          <div className="store-brand">
+            <div className="store-brand-copy">
+              <p className="store-kicker">Your mark</p>
+              <h2>We brand these items.</h2>
+              <p>
+                Print, embroidery, or a stamp on the blank face. Twenty pieces to start. Send artwork with the list and
+                the desk confirms placement.
+              </p>
+              <Link to="/services" className="btn-shop">
+                Ask about branding
+              </Link>
+            </div>
+            <div className="store-brand-photo">
+              <img src="/images/polo-piped-navy.png" alt="Navy piped polo ready for branding" />
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="trusted" aria-label="Clubs and companies">
-        <p>we are trusted by these clubs</p>
+        <p>Trusted by these clubs</p>
         <div className="marquee">
           <div className="marquee-track">
             {[...partners, ...partners].map((name, nameIndex) => (

@@ -4,7 +4,9 @@ export function listMessage(items, name) {
   const lines = items.map((item) => {
     const each = money(item.product.price);
     const line = money(item.qty * item.product.price);
-    return `• ${item.product.name} × ${item.qty} — ${each} each — ${line}`;
+    const bits = [item.color, item.size].filter(Boolean).join(", ");
+    const extra = bits ? ` (${bits})` : "";
+    return `• ${item.product.name}${extra} × ${item.qty} — ${each} each — ${line}`;
   });
   const total = items.reduce((sum, item) => sum + item.qty * item.product.price, 0);
   const who = name?.trim() ? [`My name: ${name.trim()}`] : [];
