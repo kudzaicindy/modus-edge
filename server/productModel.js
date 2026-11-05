@@ -49,3 +49,19 @@ export function productPayload(product) {
     specs: product.specs || undefined,
   };
 }
+
+/** Upsert seed data without overwriting admin-set prices on existing products. */
+export function seedUpsertOp(product) {
+  const payload = productPayload({ ...product, hidden: Boolean(product.hidden), stock: product.stock ?? null });
+  const { price, compareAt, ...rest } = payload;
+  return {
+    updateOne: {
+      filter: { id: product.id },
+      update: {
+        $set: rest,
+        $setOnInsert: { price, compareAt },
+      },
+      upsert: true,
+    },
+  };
+}

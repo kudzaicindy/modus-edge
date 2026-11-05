@@ -183,7 +183,7 @@ export function reply(question, { items }) {
 
   if (/\b(where|address|phone|whatsapp|call|email|contact)\b/.test(lower)) {
     return {
-      text: `${brand.name} is at ${brand.address}. WhatsApp ${brand.whatsappDisplay}. Email ${brand.email}.`,
+      text: `${brand.name} is at ${brand.address}. Phone ${brand.phones.join(" / ")}. WhatsApp ${brand.whatsappDisplay}. Instagram ${brand.instagramHandle}. Email ${brand.email}.`,
     };
   }
 

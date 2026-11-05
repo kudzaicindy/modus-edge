@@ -6,7 +6,7 @@ import { products as seedProducts } from "../src/data.js";
 import { authenticateAdmin, authenticateEnvAdmin } from "./adminModel.js";
 import { connectDb, dbRecentlyFailed, isDbReady } from "./db.js";
 import { Catalog, emptyCatalog, getCatalogDoc, toState } from "./catalogModel.js";
-import { Product, productPayload } from "./productModel.js";
+import { Product, productPayload, seedUpsertOp } from "./productModel.js";
 import { isSeedProduct } from "./seedIds.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -277,22 +277,12 @@ app.post("/api/catalog/reset", withDb, requireAdmin, async (_req, res) => {
 app.post("/api/catalog/seed", withDb, requireAdmin, async (_req, res) => {
   try {
     const { products: seedProducts } = await import("../src/data.js");
-    const overrides = {};
-    const ops = seedProducts.map((product) => {
-      const payload = productPayload({ ...product, hidden: false, stock: product.stock ?? null });
-      overrides[product.id] = { ...payload };
-      return {
-        updateOne: {
-          filter: { id: product.id },
-          update: { $set: payload },
-          upsert: true,
-        },
-      };
-    });
+    // Preserve admin prices on existing products; seed prices only for new inserts.
+    const ops = seedProducts.map((product) => seedUpsertOp(product));
     await Product.bulkWrite(ops, { ordered: false });
     const doc = await Catalog.findOneAndUpdate(
       { key: "main" },
-      { key: "main", overrides, extras: [], deleted: [] },
+      { key: "main", overrides: {}, extras: [], deleted: [] },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
     res.json({

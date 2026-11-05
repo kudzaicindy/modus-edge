@@ -3,7 +3,7 @@ import { products as seedProducts } from "../src/data.js";
 import { ensureAdmin } from "./adminModel.js";
 import { connectDb } from "./db.js";
 import { Catalog } from "./catalogModel.js";
-import { Product, productPayload } from "./productModel.js";
+import { Product, seedUpsertOp } from "./productModel.js";
 
 async function seed() {
   if (!process.env.MONGODB_URI) {
@@ -22,17 +22,8 @@ async function seed() {
       : `Admin updated: ${adminResult.username}`
   );
 
-  // Products collection is the source of truth; keep Catalog overrides empty.
-  const ops = seedProducts.map((product) => {
-    const payload = productPayload({ ...product, hidden: false, stock: product.stock ?? null });
-    return {
-      updateOne: {
-        filter: { id: product.id },
-        update: { $set: payload },
-        upsert: true,
-      },
-    };
-  });
+  // Keep admin prices/compareAt on existing products; seed prices only apply on insert.
+  const ops = seedProducts.map((product) => seedUpsertOp(product));
 
   const productResult = await Product.bulkWrite(ops, { ordered: false });
   await Catalog.findOneAndUpdate(
@@ -53,6 +44,7 @@ async function seed() {
     matched: productResult.matchedCount,
   });
   console.log(`Catalogue ready. Products in DB: ${count}`);
+  console.log("Preserved existing admin prices; new products got seed prices.");
   console.log("Catalog overrides cleared (Product collection is source of truth).");
   console.log(`Login at /admin with username "${adminUser}" and your ADMIN_PASSWORD.`);
 }

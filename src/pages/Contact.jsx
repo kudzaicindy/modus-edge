@@ -46,6 +46,11 @@ export default function Contact() {
             <a href={whatsappHref("Hello MODUS-EDGE, I have a question about the catalogue.")}>
               WhatsApp {brand.whatsappDisplay}
             </a>
+            {brand.instagram ? (
+              <a href={brand.instagram} target="_blank" rel="noreferrer">
+                Instagram {brand.instagramHandle}
+              </a>
+            ) : null}
           </div>
         </div>
         <div>

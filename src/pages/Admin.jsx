@@ -21,6 +21,7 @@ import {
   readFileAsDataUrl,
   useCatalog,
 } from "../catalog";
+import ImageCropModal from "../components/ImageCropModal";
 import { groupsFor, labelForGroup, money, shopFilters } from "../data";
 import { useTitle } from "../useTitle";
 import "./Admin.css";
@@ -31,10 +32,10 @@ const catalogGroups = [
   ...lineFilters,
   { id: "caps", label: "Caps" },
   { id: "bottles", label: "Bottles" },
-  { id: "desk", label: "Desk" },
-  { id: "power", label: "Power" },
+  { id: "sets", label: "Gift sets" },
   { id: "towels", label: "Towels" },
-  { id: "sets", label: "Sets" },
+  { id: "power", label: "Power (legacy)" },
+  { id: "gifts", label: "Gifts (legacy)" },
 ].filter((group, index, all) => all.findIndex((item) => item.id === group.id) === index);
 
 const blank = () => ({
@@ -51,7 +52,16 @@ const blank = () => ({
   blurb: "",
   details: "",
   sizes: "S, M, L, XL, XXL",
+  colors: [],
 });
+
+function slugGroup(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 function toForm(product) {
   return {
@@ -108,9 +118,21 @@ export default function Admin() {
   const [groupFilter, setGroupFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState(blank);
+  const [customGroup, setCustomGroup] = useState(false);
+  const [colorDraft, setColorDraft] = useState("");
+  const [cropper, setCropper] = useState(null);
   const [toast, setToast] = useState(null);
   const [busy, setBusy] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+
+  const groupOptions = useMemo(() => {
+    const fromCatalog = (adminProducts || [])
+      .map((product) => product.group)
+      .filter(Boolean)
+      .map((id) => ({ id, label: labelForGroup(id) }));
+    const merged = [...catalogGroups, ...fromCatalog];
+    return merged.filter((group, index, all) => all.findIndex((item) => item.id === group.id) === index);
+  }, [adminProducts]);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -167,7 +189,10 @@ export default function Admin() {
   }
 
   function select(product) {
-    setForm(toForm(product));
+    const next = toForm(product);
+    setForm(next);
+    setCustomGroup(!groupOptions.some((group) => group.id === next.group));
+    setColorDraft("");
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches) {
       document.getElementById("admin-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -175,11 +200,47 @@ export default function Admin() {
 
   function startNew() {
     setForm(blank());
+    setCustomGroup(false);
+    setColorDraft("");
     document.getElementById("admin-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function patch(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  function setColors(next) {
+    setForm((prev) => ({ ...prev, colors: next }));
+  }
+
+  function addColor() {
+    const name = colorDraft.trim();
+    if (!name) {
+      flash("Enter a colour name first.", "bad");
+      return;
+    }
+    if ((form.colors || []).some((color) => color.name.toLowerCase() === name.toLowerCase())) {
+      flash("That colour is already listed.", "bad");
+      return;
+    }
+    setColors([...(form.colors || []), { name, image: "" }]);
+    setColorDraft("");
+  }
+
+  function removeColor(index) {
+    setColors((form.colors || []).filter((_, i) => i !== index));
+  }
+
+  function renameColor(index, nextName) {
+    const name = nextName.trim();
+    if (!name) return;
+    setColors((form.colors || []).map((color, i) => (i === index ? { ...color, name } : color)));
+  }
+
+  function colorImageAt(index, dataUrl) {
+    setColors(
+      (form.colors || []).map((color, i) => (i === index ? { ...color, image: dataUrl } : color))
+    );
   }
 
   async function save(event) {
@@ -188,11 +249,17 @@ export default function Admin() {
       flash("Name is required.", "bad");
       return;
     }
+    const group = slugGroup(form.group);
+    if (!group) {
+      flash("Pick or type a group.", "bad");
+      return;
+    }
     const wasNew = !form.id;
     setBusy(true);
     try {
       const saved = await upsertProduct({
         ...form,
+        group,
         compareAt: form.compareAt === "" ? null : Number(form.compareAt),
         stock: form.stock === "" ? null : Number(form.stock),
         badge: form.badge || null,
@@ -200,9 +267,10 @@ export default function Admin() {
           .split(",")
           .map((part) => part.trim())
           .filter(Boolean),
-        colors: form.colors,
+        colors: form.colors || [],
       });
       setForm(toForm(saved));
+      setCustomGroup(!groupOptions.some((item) => item.id === saved.group));
       const stockLabel =
         saved.stock === 0 ? "out of stock" : saved.stock == null ? "stock open" : `${saved.stock} in stock`;
       flash(wasNew ? `Added ${saved.name}.` : `Saved ${saved.name} · ${money(saved.price)} · ${stockLabel}.`);
@@ -213,20 +281,78 @@ export default function Admin() {
     }
   }
 
-  async function onImage(file, colorName) {
+  function cropTitle(colorIndex) {
+    if (typeof colorIndex === "number") {
+      const colorName = form.colors?.[colorIndex]?.name;
+      return `Crop ${colorName || "colour"} — one item only`;
+    }
+    return "Crop main picture";
+  }
+
+  async function openCropper(file, colorIndex) {
     if (!file) return;
-    const dataUrl = await readFileAsDataUrl(file);
-    if (!form.id) {
-      patch("image", dataUrl);
-      flash("Picture ready. Hit Save.");
+    const raw = await readFileAsDataUrl(file, 2200);
+    setCropper({
+      src: raw,
+      colorIndex,
+      title: cropTitle(colorIndex),
+    });
+  }
+
+  function openCropperFromSrc(src, colorIndex) {
+    if (!src) {
+      flash("Add a picture first.", "bad");
       return;
     }
+    setCropper({
+      src,
+      colorIndex,
+      title: cropTitle(colorIndex),
+    });
+  }
+
+  async function applyCroppedImage(dataUrl, colorIndex) {
+    const colorName =
+      typeof colorIndex === "number" ? form.colors?.[colorIndex]?.name : undefined;
+    setCropper(null);
+
+    if (!form.id) {
+      if (typeof colorIndex === "number") {
+        colorImageAt(colorIndex, dataUrl);
+        flash(`Cropped ${colorName || "colour"} ready. Hit Save.`);
+      } else {
+        patch("image", dataUrl);
+        flash("Cropped picture ready. Hit Save.");
+      }
+      return;
+    }
+
     setBusy(true);
     try {
-      const saved = await setProductImage(form.id, dataUrl, colorName);
-      if (saved) {
+      if (typeof colorIndex === "number") {
+        const colors = (form.colors || []).map((color, i) =>
+          i === colorIndex ? { ...color, image: dataUrl } : color
+        );
+        const image = colorIndex === 0 ? dataUrl : form.image;
+        const saved = await upsertProduct({
+          ...form,
+          colors,
+          image,
+          compareAt: form.compareAt === "" ? null : Number(form.compareAt),
+          stock: form.stock === "" ? null : Number(form.stock),
+          sizes: String(form.sizes || "")
+            .split(",")
+            .map((part) => part.trim())
+            .filter(Boolean),
+        });
         setForm(toForm(saved));
-        flash(colorName ? `Updated ${saved.name} · ${colorName}.` : `Updated ${saved.name} picture.`);
+        flash(`Cropped ${saved.name} · ${colorName || "colour"}.`);
+      } else {
+        const saved = await setProductImage(form.id, dataUrl);
+        if (saved) {
+          setForm(toForm(saved));
+          flash(`Cropped ${saved.name} picture.`);
+        }
       }
     } catch (err) {
       flash(err.message || "Picture save failed.", "bad");
@@ -529,24 +655,37 @@ export default function Admin() {
                       </td>
                       <td>
                         <Field label="Group">
-                          <select
-                            value={
-                              catalogGroups.some((group) => group.id === form.group)
-                                ? form.group
-                                : form.group || "gifts"
-                            }
-                            onChange={(event) => patch("group", event.target.value)}
-                            aria-label="Product group"
-                          >
-                            {!catalogGroups.some((group) => group.id === form.group) && form.group ? (
-                              <option value={form.group}>{labelForGroup(form.group)}</option>
+                          <div className="admin-group-fields">
+                            <select
+                              value={customGroup ? "__custom__" : form.group || "shirts"}
+                              onChange={(event) => {
+                                if (event.target.value === "__custom__") {
+                                  setCustomGroup(true);
+                                  patch("group", "");
+                                  return;
+                                }
+                                setCustomGroup(false);
+                                patch("group", event.target.value);
+                              }}
+                              aria-label="Product group"
+                            >
+                              {groupOptions.map((group) => (
+                                <option key={group.id} value={group.id}>
+                                  {group.label}
+                                </option>
+                              ))}
+                              <option value="__custom__">New group…</option>
+                            </select>
+                            {customGroup ? (
+                              <input
+                                value={form.group}
+                                onChange={(event) => patch("group", event.target.value)}
+                                onBlur={(event) => patch("group", slugGroup(event.target.value))}
+                                placeholder="e.g. visors"
+                                aria-label="Custom group id"
+                              />
                             ) : null}
-                            {catalogGroups.map((group) => (
-                              <option key={group.id} value={group.id}>
-                                {group.label}
-                              </option>
-                            ))}
-                          </select>
+                          </div>
                         </Field>
                       </td>
                     </tr>
@@ -656,15 +795,28 @@ export default function Admin() {
                     <img src={form.image || "/images/polo-navy.png"} alt="" />
                     <div>
                       <p>Main picture</p>
-                      <label className="btn-dark admin-upload">
-                        <Upload size={16} /> Upload
-                        <input
-                          type="file"
-                          accept="image/*"
-                          hidden
-                          onChange={(event) => onImage(event.target.files?.[0])}
-                        />
-                      </label>
+                      <div className="admin-media-actions">
+                        <label className="btn-dark admin-upload">
+                          <Upload size={16} /> Upload & crop
+                          <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              event.target.value = "";
+                              openCropper(file);
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="btn-ghost-ink"
+                          onClick={() => openCropperFromSrc(form.image, undefined)}
+                        >
+                          Crop current
+                        </button>
+                      </div>
                       <input
                         value={form.image}
                         onChange={(event) => patch("image", event.target.value)}
@@ -673,26 +825,74 @@ export default function Admin() {
                     </div>
                   </div>
 
-                  {form.colors?.length > 0 ? (
-                    <div className="admin-colors">
-                      <h4>Colour variants</h4>
-                      {form.colors.map((color) => (
-                        <div key={color.name} className="admin-color-row">
-                          <img src={color.image || form.image} alt="" />
-                          <span>{color.name}</span>
-                          <label className="btn-ghost-ink admin-upload">
-                            <Upload size={14} /> Replace
-                            <input
-                              type="file"
-                              accept="image/*"
-                              hidden
-                              onChange={(event) => onImage(event.target.files?.[0], color.name)}
-                            />
-                          </label>
-                        </div>
-                      ))}
+                  <div className="admin-colors">
+                    <h4>Colour pictures</h4>
+                    <p className="muted admin-color-hint">
+                      Upload a lineup if you must, then crop to one colour. Shoppers should never see four colours in one shot.
+                    </p>
+                    {(form.colors || []).map((color, index) => (
+                      <div key={`${index}-${color.name}`} className="admin-color-row">
+                        {color.image ? (
+                          <img src={color.image} alt="" />
+                        ) : (
+                          <div className="admin-color-empty" title="Needs its own cropped photo">
+                            ?
+                          </div>
+                        )}
+                        <input
+                          className="admin-color-name"
+                          defaultValue={color.name}
+                          onBlur={(event) => renameColor(index, event.target.value)}
+                          aria-label={`Rename colour ${index + 1}`}
+                        />
+                        <label className="btn-ghost-ink admin-upload">
+                          <Upload size={14} /> Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              event.target.value = "";
+                              openCropper(file, index);
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="btn-ghost-ink"
+                          onClick={() => openCropperFromSrc(color.image || form.image, index)}
+                        >
+                          Crop
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-ghost-ink danger admin-color-remove"
+                          onClick={() => removeColor(index)}
+                          aria-label={`Remove ${color.name}`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="admin-color-add">
+                      <input
+                        value={colorDraft}
+                        onChange={(event) => setColorDraft(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            addColor();
+                          }
+                        }}
+                        placeholder="Colour name (Navy, White…)"
+                        aria-label="New colour name"
+                      />
+                      <button type="button" className="btn-ghost-ink" onClick={addColor}>
+                        <Plus size={14} /> Add colour
+                      </button>
                     </div>
-                  ) : null}
+                  </div>
                 </div>
               </section>
 
@@ -722,6 +922,15 @@ export default function Admin() {
           {toast.kind !== "bad" ? <Check size={18} strokeWidth={2.5} /> : null}
           <span>{toast.message}</span>
         </div>
+      ) : null}
+
+      {cropper ? (
+        <ImageCropModal
+          src={cropper.src}
+          title={cropper.title}
+          onCancel={() => setCropper(null)}
+          onApply={(dataUrl) => applyCroppedImage(dataUrl, cropper.colorIndex)}
+        />
       ) : null}
     </div>
   );

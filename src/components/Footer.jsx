@@ -17,6 +17,11 @@ export default function Footer() {
           </a>
         ))}
         <a href={`mailto:${brand.email}`}>{brand.email}</a>
+        {brand.instagram ? (
+          <a href={brand.instagram} target="_blank" rel="noreferrer">
+            Instagram {brand.instagramHandle}
+          </a>
+        ) : null}
         <span className="foot-copy">© 2026 {brand.name}</span>
       </div>
     </footer>

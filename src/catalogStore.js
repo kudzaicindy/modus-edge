@@ -94,7 +94,9 @@ export function applyLocalSeed() {
   });
 }
 
-const seedById = new Map(seedProducts.map((product) => [product.id, product]));
+const seedById = new Map(
+  seedProducts.filter((product) => product?.id).map((product) => [product.id, product])
+);
 
 function hydrateColors(product) {
   const seed = seedById.get(product.id);
@@ -323,11 +325,15 @@ export function exportCatalog() {
 export function setProductImage(id, imageUrl, colorName) {
   const product = findCatalogProduct(id);
   if (!product) return Promise.resolve(null);
-  if (colorName && product.colors?.length) {
-    const colors = product.colors.map((color) =>
-      color.name === colorName ? { ...color, image: imageUrl } : color
-    );
-    const image = colorName === product.colors[0]?.name ? imageUrl : product.image;
+  if (colorName) {
+    const existing = Array.isArray(product.colors) ? product.colors : [];
+    const found = existing.some((color) => color.name === colorName);
+    const colors = found
+      ? existing.map((color) =>
+          color.name === colorName ? { ...color, image: imageUrl } : color
+        )
+      : [...existing, { name: colorName, image: imageUrl }];
+    const image = colorName === colors[0]?.name ? imageUrl : product.image;
     return upsertProduct({ ...product, colors, image });
   }
   return upsertProduct({ ...product, image: imageUrl });

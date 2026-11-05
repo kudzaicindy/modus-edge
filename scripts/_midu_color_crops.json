@@ -1,0 +1,286 @@
+{
+  "midu-b06": [
+    {
+      "name": "Pink",
+      "image": "/images/midu/colors/midu-b06-pink.jpg",
+      "box": [
+        0,
+        169,
+        348,
+        750
+      ]
+    },
+    {
+      "name": "Tan",
+      "image": "/images/midu/colors/midu-b06-tan.jpg",
+      "box": [
+        340,
+        167,
+        750,
+        750
+      ]
+    }
+  ],
+  "midu-b19": [
+    {
+      "name": "Rose gold",
+      "image": "/images/midu/colors/midu-b19-rose-gold.jpg",
+      "box": [
+        0,
+        513,
+        930,
+        1280
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-b19-silver.jpg",
+      "box": [
+        0,
+        0,
+        253,
+        327
+      ]
+    },
+    {
+      "name": "Rose gold 2",
+      "image": "/images/midu/colors/midu-b19-rose-gold-2.jpg",
+      "box": [
+        594,
+        366,
+        965,
+        790
+      ]
+    }
+  ],
+  "midu-bg04": [
+    {
+      "name": "Sky",
+      "image": "/images/midu/colors/midu-bg04-sky.jpg",
+      "box": [
+        0,
+        0,
+        370,
+        504
+      ]
+    },
+    {
+      "name": "Sky 2",
+      "image": "/images/midu/colors/midu-bg04-sky-2.jpg",
+      "box": [
+        0,
+        596,
+        152,
+        800
+      ]
+    },
+    {
+      "name": "Sky 3",
+      "image": "/images/midu/colors/midu-bg04-sky-3.jpg",
+      "box": [
+        115,
+        275,
+        321,
+        572
+      ]
+    },
+    {
+      "name": "Sky 4",
+      "image": "/images/midu/colors/midu-bg04-sky-4.jpg",
+      "box": [
+        143,
+        0,
+        800,
+        800
+      ]
+    },
+    {
+      "name": "Sky 5",
+      "image": "/images/midu/colors/midu-bg04-sky-5.jpg",
+      "box": [
+        272,
+        0,
+        376,
+        150
+      ]
+    }
+  ],
+  "midu-bh12": [
+    {
+      "name": "Charcoal",
+      "image": "/images/midu/colors/midu-bh12-charcoal.jpg",
+      "box": [
+        27,
+        316,
+        363,
+        693
+      ]
+    },
+    {
+      "name": "Tan",
+      "image": "/images/midu/colors/midu-bh12-tan.jpg",
+      "box": [
+        134,
+        549,
+        800,
+        800
+      ]
+    },
+    {
+      "name": "Charcoal 2",
+      "image": "/images/midu/colors/midu-bh12-charcoal-2.jpg",
+      "box": [
+        220,
+        112,
+        502,
+        479
+      ]
+    },
+    {
+      "name": "Tan 2",
+      "image": "/images/midu/colors/midu-bh12-tan-2.jpg",
+      "box": [
+        356,
+        188,
+        800,
+        560
+      ]
+    },
+    {
+      "name": "Copper",
+      "image": "/images/midu/colors/midu-bh12-copper.jpg",
+      "box": [
+        700,
+        13,
+        800,
+        212
+      ]
+    }
+  ],
+  "midu-gs603": [
+    {
+      "name": "Rose gold",
+      "image": "/images/midu/colors/midu-gs603-rose-gold.jpg",
+      "box": [
+        0,
+        0,
+        646,
+        800
+      ]
+    },
+    {
+      "name": "Charcoal",
+      "image": "/images/midu/colors/midu-gs603-charcoal.jpg",
+      "box": [
+        446,
+        0,
+        800,
+        692
+      ]
+    }
+  ],
+  "midu-pb406": [
+    {
+      "name": "Rose gold",
+      "image": "/images/midu/colors/midu-pb406-rose-gold.jpg",
+      "box": [
+        24,
+        422,
+        717,
+        728
+      ]
+    },
+    {
+      "name": "Charcoal",
+      "image": "/images/midu/colors/midu-pb406-charcoal.jpg",
+      "box": [
+        117,
+        645,
+        338,
+        764
+      ]
+    },
+    {
+      "name": "Charcoal 2",
+      "image": "/images/midu/colors/midu-pb406-charcoal-2.jpg",
+      "box": [
+        431,
+        30,
+        720,
+        222
+      ]
+    },
+    {
+      "name": "Charcoal 3",
+      "image": "/images/midu/colors/midu-pb406-charcoal-3.jpg",
+      "box": [
+        434,
+        214,
+        718,
+        283
+      ]
+    },
+    {
+      "name": "Charcoal 4",
+      "image": "/images/midu/colors/midu-pb406-charcoal-4.jpg",
+      "box": [
+        435,
+        274,
+        717,
+        323
+      ]
+    },
+    {
+      "name": "Charcoal 5",
+      "image": "/images/midu/colors/midu-pb406-charcoal-5.jpg",
+      "box": [
+        435,
+        315,
+        717,
+        409
+      ]
+    },
+    {
+      "name": "Charcoal 6",
+      "image": "/images/midu/colors/midu-pb406-charcoal-6.jpg",
+      "box": [
+        437,
+        401,
+        717,
+        475
+      ]
+    }
+  ],
+  "midu-wc08": [
+    {
+      "name": "Rose gold",
+      "image": "/images/midu/colors/midu-wc08-rose-gold.jpg",
+      "box": [
+        0,
+        176,
+        372,
+        768
+      ]
+    },
+    {
+      "name": "Charcoal",
+      "image": "/images/midu/colors/midu-wc08-charcoal.jpg",
+      "box": [
+        352,
+        38,
+        732,
+        287
+      ]
+    },
+    {
+      "name": "Rose gold 2",
+      "image": "/images/midu/colors/midu-wc08-rose-gold-2.jpg",
+      "box": [
+        363,
+        214,
+        788,
+        768
+      ]
+    }
+  ]
+}
