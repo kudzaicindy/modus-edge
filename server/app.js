@@ -2,8 +2,9 @@ import cors from "cors";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import { products as seedProducts } from "../src/data.js";
 import { authenticateAdmin } from "./adminModel.js";
-import { connectDb } from "./db.js";
+import { connectDb, isDbReady } from "./db.js";
 import { Catalog, emptyCatalog, getCatalogDoc, toState } from "./catalogModel.js";
 import { Product, productPayload } from "./productModel.js";
 import { isSeedProduct } from "./seedIds.js";
@@ -23,6 +24,17 @@ async function catalogResponse(doc) {
   return {
     ...toState(doc),
     products: await listProducts(),
+  };
+}
+
+function seedCatalogResponse() {
+  return {
+    overrides: {},
+    extras: [],
+    deleted: [],
+    updatedAt: null,
+    products: seedProducts,
+    source: "seed",
   };
 }
 
@@ -56,8 +68,25 @@ async function withDb(req, res, next) {
   }
 }
 
+/** Prefer DB, but allow public catalogue reads to fall back to seed data. */
+async function withDbOrSeed(req, res, next) {
+  try {
+    await connectDb();
+    req.catalogSource = "db";
+    return next();
+  } catch (error) {
+    console.error("Catalogue falling back to seed:", error.message);
+    req.catalogSource = "seed";
+    return next();
+  }
+}
+
 app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, service: "modus-edge-catalog" });
+  res.json({
+    ok: true,
+    service: "modus-edge-catalog",
+    db: isDbReady() ? "connected" : "disconnected",
+  });
 });
 
 app.post("/api/admin/login", withDb, async (req, res) => {
@@ -75,13 +104,16 @@ app.post("/api/admin/login", withDb, async (req, res) => {
   }
 });
 
-app.get("/api/catalog", withDb, async (_req, res) => {
+app.get("/api/catalog", withDbOrSeed, async (req, res) => {
   try {
+    if (req.catalogSource === "seed" || !isDbReady()) {
+      return res.json(seedCatalogResponse());
+    }
     const doc = await getCatalogDoc();
     res.json(await catalogResponse(doc));
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to load catalogue" });
+    res.json(seedCatalogResponse());
   }
 });
 
