@@ -21,29 +21,34 @@ export async function connectDb(uri = process.env.MONGODB_URI) {
     return cached.conn;
   }
 
-  // Drop stale failed / disconnected state so the next call can retry.
-  if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
-    cached.conn = null;
-    cached.promise = null;
+  // Drop any in-flight / failed attempt so we can retry cleanly.
+  cached.promise = null;
+  cached.conn = null;
+
+  // If mongoose is stuck connecting/disconnecting, reset it.
+  if (mongoose.connection.readyState !== 0) {
+    try {
+      await mongoose.disconnect();
+    } catch {
+      // ignore
+    }
   }
 
-  if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(uri, {
-        bufferCommands: false,
-        serverSelectionTimeoutMS: 12000,
-        connectTimeoutMS: 12000,
-      })
-      .then((conn) => {
-        cached.conn = conn;
-        return conn;
-      })
-      .catch((error) => {
-        cached.promise = null;
-        cached.conn = null;
-        throw error;
-      });
-  }
+  cached.promise = mongoose
+    .connect(uri, {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 12000,
+      connectTimeoutMS: 12000,
+    })
+    .then((conn) => {
+      cached.conn = conn;
+      return conn;
+    })
+    .catch((error) => {
+      cached.promise = null;
+      cached.conn = null;
+      throw error;
+    });
 
   return cached.promise;
 }

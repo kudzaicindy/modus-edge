@@ -1,6 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Check, Eye, EyeOff, Plus, Save, Trash2, Upload } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  Check,
+  Download,
+  Eye,
+  EyeOff,
+  LogOut,
+  Plus,
+  RotateCcw,
+  Save,
+  Search,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import {
   adminLogin,
   adminLogout,
@@ -8,8 +21,9 @@ import {
   readFileAsDataUrl,
   useCatalog,
 } from "../catalog";
-import { money, shopFilters } from "../data";
+import { labelForGroup, money, shopFilters } from "../data";
 import { useTitle } from "../useTitle";
+import "./Admin.css";
 
 const groups = shopFilters.filter((filter) => filter.id !== "all");
 
@@ -48,9 +62,23 @@ function toForm(product) {
   };
 }
 
+function statusOf(product) {
+  if (product.hidden) return "hidden";
+  if (product.stock === 0) return "out";
+  return "live";
+}
+
+function Field({ label, children }) {
+  return (
+    <div className="pd-field">
+      <div className="pd-label">{label}</div>
+      {children}
+    </div>
+  );
+}
+
 export default function Admin() {
   useTitle("Admin");
-  const navigate = useNavigate();
   const {
     adminProducts,
     upsertProduct,
@@ -67,10 +95,12 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
+  const [groupFilter, setGroupFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [form, setForm] = useState(blank);
-  const [note, setNote] = useState("");
   const [toast, setToast] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -78,20 +108,38 @@ export default function Admin() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  useEffect(() => {
+    if (!toolsOpen) return undefined;
+    function onDocClick(event) {
+      if (!event.target.closest(".admin-tools")) setToolsOpen(false);
+    }
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, [toolsOpen]);
+
   function flash(message, kind = "ok") {
-    setNote(message);
     setToast({ message, kind, at: Date.now() });
   }
+
+  const counts = useMemo(() => {
+    const next = { all: adminProducts.length, live: 0, hidden: 0, out: 0 };
+    adminProducts.forEach((product) => {
+      next[statusOf(product)] += 1;
+    });
+    return next;
+  }, [adminProducts]);
 
   const list = useMemo(() => {
     const query = q.trim().toLowerCase();
     return adminProducts
       .filter((product) => {
+        if (groupFilter !== "all" && product.group !== groupFilter) return false;
+        if (statusFilter !== "all" && statusOf(product) !== statusFilter) return false;
         if (!query) return true;
         return `${product.name} ${product.id} ${product.group}`.toLowerCase().includes(query);
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [adminProducts, q]);
+  }, [adminProducts, q, groupFilter, statusFilter]);
 
   async function login(event) {
     event.preventDefault();
@@ -109,12 +157,14 @@ export default function Admin() {
 
   function select(product) {
     setForm(toForm(product));
-    setNote("");
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches) {
+      document.getElementById("admin-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 
   function startNew() {
     setForm(blank());
-    setNote("");
+    document.getElementById("admin-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function patch(field, value) {
@@ -144,10 +194,9 @@ export default function Admin() {
       setForm(toForm(saved));
       const stockLabel =
         saved.stock === 0 ? "out of stock" : saved.stock == null ? "stock open" : `${saved.stock} in stock`;
-      flash(wasNew ? `Added ${saved.name}.` : `Saved ${saved.name} at ${money(saved.price)} (${stockLabel}).`);
-      navigate(`/product/${saved.id}`);
+      flash(wasNew ? `Added ${saved.name}.` : `Saved ${saved.name} · ${money(saved.price)} · ${stockLabel}.`);
     } catch (err) {
-      flash(err.message || "Save failed. Is the API and MongoDB running?", "bad");
+      flash(err.message || "Save failed. Check MongoDB / Vercel env.", "bad");
     } finally {
       setBusy(false);
     }
@@ -166,7 +215,7 @@ export default function Admin() {
       const saved = await setProductImage(form.id, dataUrl, colorName);
       if (saved) {
         setForm(toForm(saved));
-        flash(colorName ? `Updated ${saved.name} · ${colorName} picture.` : `Updated ${saved.name} picture.`);
+        flash(colorName ? `Updated ${saved.name} · ${colorName}.` : `Updated ${saved.name} picture.`);
       }
     } catch (err) {
       flash(err.message || "Picture save failed.", "bad");
@@ -177,13 +226,13 @@ export default function Admin() {
 
   async function onDelete() {
     if (!form.id) return;
-    if (!window.confirm(`Hide/remove ${form.name} from the catalogue?`)) return;
+    if (!window.confirm(`Remove ${form.name} from the catalogue?`)) return;
     const name = form.name;
     setBusy(true);
     try {
       await deleteProduct(form.id);
       setForm(blank());
-      flash(`Removed ${name} from the live catalogue.`);
+      flash(`Removed ${name}.`);
     } catch (err) {
       flash(err.message || "Delete failed.", "bad");
     } finally {
@@ -200,6 +249,7 @@ export default function Admin() {
     a.click();
     URL.revokeObjectURL(url);
     flash("Catalogue exported.");
+    setToolsOpen(false);
   }
 
   async function onImport(file) {
@@ -209,11 +259,12 @@ export default function Admin() {
       const text = await file.text();
       await importCatalog(text);
       setForm(blank());
-      flash("Catalogue imported to MongoDB.");
+      flash("Catalogue imported.");
     } catch (err) {
       flash(err.message || "Import failed.", "bad");
     } finally {
       setBusy(false);
+      setToolsOpen(false);
     }
   }
 
@@ -223,11 +274,12 @@ export default function Admin() {
     try {
       await resetCatalog();
       setForm(blank());
-      flash("Catalogue reset to original.");
+      flash("Catalogue reset.");
     } catch (err) {
       flash(err.message || "Reset failed.", "bad");
     } finally {
       setBusy(false);
+      setToolsOpen(false);
     }
   }
 
@@ -246,7 +298,7 @@ export default function Admin() {
           .filter(Boolean),
       });
       setForm(toForm(saved));
-      flash(hidden ? `Hidden ${saved.name} from shop.` : `Showing ${saved.name} in shop.`);
+      flash(hidden ? `Hidden ${saved.name}.` : `Showing ${saved.name}.`);
     } catch (err) {
       flash(err.message || "Update failed.", "bad");
     } finally {
@@ -256,11 +308,14 @@ export default function Admin() {
 
   if (!authed) {
     return (
-      <section className="section admin-page">
-        <div className="wrap narrow admin-login">
-          <p className="eyebrow">Staff</p>
-          <h1>Admin</h1>
-          <p className="muted">Sign in to change prices, stock, pictures, and visibility. Saves go to MongoDB.</p>
+      <section className="admin-page admin-login-page">
+        <div className="admin-login-card">
+          <Link to="/" className="admin-back">
+            <ArrowLeft size={16} /> Back to site
+          </Link>
+          <p className="admin-kicker">Modus Edge</p>
+          <h1>Catalogue admin</h1>
+          <p className="muted">Sign in to edit prices, stock, pictures, and visibility.</p>
           <form className="admin-login-form" onSubmit={login}>
             <label>
               Password
@@ -269,11 +324,12 @@ export default function Admin() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
+                placeholder="Enter admin password"
               />
             </label>
             {error ? <p className="admin-note bad">{error}</p> : null}
-            <button type="submit" className="btn-dark" disabled={busy}>
-              {busy ? "Checking…" : "Enter"}
+            <button type="submit" className="btn-dark admin-login-btn" disabled={busy}>
+              {busy ? "Checking…" : "Sign in"}
             </button>
           </form>
         </div>
@@ -283,242 +339,362 @@ export default function Admin() {
 
   return (
     <div className="admin-root">
-      <section className="section admin-page">
-        <div className="wrap admin-shell">
-          <div className="admin-top">
-            <div>
-              <p className="eyebrow">Staff</p>
-              <h1>Catalogue admin</h1>
-              <p className="muted">
-                Changes save to MongoDB and show for every visitor. {ready ? "API connected." : "Connecting…"}
-                {catalogError ? ` Warning: ${catalogError}` : ""}
-                {busy ? " Saving…" : ""}
-              </p>
-            </div>
-            <div className="admin-top-actions">
-              <Link to="/shop" className="btn-lime">
-                Open shop
-              </Link>
-              {form.id ? (
-                <Link to={`/product/${form.id}`} className="btn-ghost-ink">
-                  View product
-                </Link>
-              ) : null}
-              <button type="button" className="btn-ghost-ink" onClick={onExport}>
-                Export
-              </button>
-              <label className="btn-ghost-ink admin-file">
-                Import
-                <input
-                  type="file"
-                  accept="application/json"
-                  hidden
-                  onChange={(event) => onImport(event.target.files?.[0])}
-                />
-              </label>
-              <button type="button" className="btn-ghost-ink" onClick={onReset}>
-                Reset
-              </button>
-              <button
-                type="button"
-                className="btn-ghost-ink"
-                onClick={() => {
-                  adminLogout();
-                  setAuthed(false);
-                }}
-              >
-                Log out
-              </button>
-            </div>
+      <header className="admin-bar">
+        <div className="admin-bar-main">
+          <div>
+            <p className="admin-kicker">Staff desk</p>
+            <h1>Catalogue</h1>
           </div>
+          <p className={`admin-status ${catalogError ? "bad" : ready ? "ok" : ""}`}>
+            {catalogError ? catalogError : ready ? "Connected to MongoDB" : "Connecting…"}
+            {busy ? " · Saving…" : ""}
+          </p>
+        </div>
+        <div className="admin-bar-actions">
+          <Link to="/shop" className="btn-lime">
+            View shop
+          </Link>
+          {form.id ? (
+            <Link to={`/product/${form.id}`} className="btn-ghost-ink">
+              Open product
+            </Link>
+          ) : null}
+          <div className="admin-tools">
+            <button type="button" className="btn-ghost-ink" onClick={() => setToolsOpen((v) => !v)}>
+              Tools
+            </button>
+            {toolsOpen ? (
+              <div className="admin-tools-menu">
+                <button type="button" onClick={onExport}>
+                  <Download size={15} /> Export JSON
+                </button>
+                <label>
+                  <Upload size={15} /> Import JSON
+                  <input
+                    type="file"
+                    accept="application/json"
+                    hidden
+                    onChange={(event) => onImport(event.target.files?.[0])}
+                  />
+                </label>
+                <button type="button" onClick={onReset}>
+                  <RotateCcw size={15} /> Reset catalogue
+                </button>
+              </div>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            className="admin-logout"
+            onClick={() => {
+              adminLogout();
+              setAuthed(false);
+            }}
+          >
+            <LogOut size={15} /> Log out
+          </button>
+        </div>
+      </header>
 
+      <section className="admin-page">
+        <div className="wrap admin-shell">
           <div className="admin-grid">
             <aside className="admin-list">
-              <div className="admin-list-head">
-                <input
-                  type="search"
-                  placeholder="Search products"
-                  value={q}
-                  onChange={(event) => setQ(event.target.value)}
-                />
+              <div className="admin-list-top">
+                <div className="admin-search">
+                  <Search size={16} />
+                  <input
+                    type="search"
+                    placeholder="Search name, id, group"
+                    value={q}
+                    onChange={(event) => setQ(event.target.value)}
+                  />
+                </div>
                 <button type="button" className="btn-dark admin-add" onClick={startNew}>
                   <Plus size={16} /> New
                 </button>
               </div>
-              <div className="admin-rows">
-                {list.map((product) => (
+
+              <div className="admin-filters" role="tablist" aria-label="Status">
+                {[
+                  ["all", "All"],
+                  ["live", "Live"],
+                  ["hidden", "Hidden"],
+                  ["out", "Out"],
+                ].map(([id, label]) => (
                   <button
-                    key={product.id}
+                    key={id}
                     type="button"
-                    className={`admin-row ${form.id === product.id ? "active" : ""} ${product.hidden ? "is-hidden" : ""}`}
-                    onClick={() => select(product)}
+                    className={statusFilter === id ? "on" : ""}
+                    onClick={() => setStatusFilter(id)}
                   >
-                    <img src={product.image} alt="" />
-                    <span>
-                      <strong>{product.name}</strong>
-                      <em>
-                        {money(product.price)}
-                        {product.stock === 0 ? " · Out" : product.stock != null ? ` · ${product.stock}` : ""}
-                        {product.hidden ? " · Hidden" : ""}
-                      </em>
-                    </span>
+                    {label}
+                    <span>{counts[id] ?? 0}</span>
                   </button>
                 ))}
               </div>
+
+              <div className="admin-groups" role="tablist" aria-label="Groups">
+                <button
+                  type="button"
+                  className={groupFilter === "all" ? "on" : ""}
+                  onClick={() => setGroupFilter("all")}
+                >
+                  All lines
+                </button>
+                {groups.map((group) => (
+                  <button
+                    key={group.id}
+                    type="button"
+                    className={groupFilter === group.id ? "on" : ""}
+                    onClick={() => setGroupFilter(group.id)}
+                  >
+                    {group.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="admin-rows">
+                {list.length === 0 ? (
+                  <p className="admin-empty">No products match those filters.</p>
+                ) : (
+                  list.map((product) => {
+                    const status = statusOf(product);
+                    return (
+                      <button
+                        key={product.id}
+                        type="button"
+                        className={`admin-row ${form.id === product.id ? "active" : ""} ${status === "hidden" ? "is-hidden" : ""}`}
+                        onClick={() => select(product)}
+                      >
+                        <img src={product.image} alt="" />
+                        <span>
+                          <strong>{product.name}</strong>
+                          <em>
+                            {labelForGroup(product.group)} · {money(product.price)}
+                          </em>
+                        </span>
+                        <b className={`admin-pill ${status}`}>
+                          {status === "live" ? "Live" : status === "out" ? "Out" : "Hidden"}
+                        </b>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </aside>
 
-            <form className="admin-editor" onSubmit={save}>
+            <form id="admin-editor" className="admin-editor" onSubmit={save}>
               <div className="admin-editor-head">
-                <h2>{form.id ? "Edit product" : "New product"}</h2>
-                {note ? <p className="admin-note">{note}</p> : null}
-              </div>
-
-              <div className="admin-fields">
-                <label>
-                  Name
-                  <input value={form.name} onChange={(event) => patch("name", event.target.value)} required />
-                </label>
-                <label>
-                  Group
-                  <select value={form.group} onChange={(event) => patch("group", event.target.value)}>
-                    {groups.map((group) => (
-                      <option key={group.id} value={group.id}>
-                        {group.label}
-                      </option>
-                    ))}
-                    <option value="caps">Caps</option>
-                    <option value="bottles">Bottles</option>
-                    <option value="desk">Desk</option>
-                    <option value="power">Power</option>
-                    <option value="towels">Towels</option>
-                    <option value="sets">Sets</option>
-                  </select>
-                </label>
-                <label>
-                  Price (USD)
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={form.price}
-                    onChange={(event) => patch("price", event.target.value)}
-                  />
-                </label>
-                <label>
-                  Compare at
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={form.compareAt}
-                    onChange={(event) => patch("compareAt", event.target.value)}
-                    placeholder="Optional"
-                  />
-                </label>
-                <label>
-                  Stock
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={form.stock}
-                    onChange={(event) => patch("stock", event.target.value)}
-                    placeholder="Blank = always available"
-                  />
-                </label>
-                <label>
-                  Badge
-                  <input
-                    value={form.badge}
-                    onChange={(event) => patch("badge", event.target.value)}
-                    placeholder="Sale, New"
-                  />
-                </label>
-                <label className="admin-check">
-                  <input
-                    type="checkbox"
-                    checked={form.featured}
-                    onChange={(event) => patch("featured", event.target.checked)}
-                  />
-                  Featured
-                </label>
-                <label className="admin-check">
-                  <input
-                    type="checkbox"
-                    checked={form.hidden}
-                    onChange={(event) => patch("hidden", event.target.checked)}
-                  />
-                  Hidden from shop
-                </label>
-                <label className="admin-span">
-                  Sizes (comma separated)
-                  <input value={form.sizes} onChange={(event) => patch("sizes", event.target.value)} />
-                </label>
-                <label className="admin-span">
-                  Short blurb
-                  <textarea rows={2} value={form.blurb} onChange={(event) => patch("blurb", event.target.value)} />
-                </label>
-                <label className="admin-span">
-                  Details
-                  <textarea rows={4} value={form.details} onChange={(event) => patch("details", event.target.value)} />
-                </label>
-              </div>
-
-              <div className="admin-media">
-                <div className="admin-media-main">
-                  <img src={form.image || "/images/polo-navy.png"} alt="" />
-                  <div>
-                    <p>Main picture</p>
-                    <label className="btn-dark admin-upload">
-                      <Upload size={16} /> Upload
-                      <input
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={(event) => onImage(event.target.files?.[0])}
-                      />
-                    </label>
-                    <input
-                      value={form.image}
-                      onChange={(event) => patch("image", event.target.value)}
-                      placeholder="/images/... or pasted URL"
-                    />
-                  </div>
+                <div>
+                  <p className="admin-kicker">{form.id ? form.id : "New item"}</p>
+                  <h2>{form.id ? form.name || "Edit product" : "Add product"}</h2>
                 </div>
-
-                {form.colors?.length > 0 ? (
-                  <div className="admin-colors">
-                    <h3>Colour pictures</h3>
-                    {form.colors.map((color) => (
-                      <div key={color.name} className="admin-color-row">
-                        <img src={color.image || form.image} alt="" />
-                        <span>{color.name}</span>
-                        <label className="btn-ghost-ink admin-upload">
-                          <Upload size={14} /> Replace
-                          <input
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            onChange={(event) => onImage(event.target.files?.[0], color.name)}
-                          />
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+                {form.id ? (
+                  <span className={`admin-pill ${statusOf(form)}`}>
+                    {statusOf(form) === "live" ? "Live" : statusOf(form) === "out" ? "Out of stock" : "Hidden"}
+                  </span>
                 ) : null}
               </div>
 
+              <section className="admin-panel">
+                <h3>Product details</h3>
+                <table
+                  className="pd-table"
+                  style={{ width: "100%", tableLayout: "fixed", borderCollapse: "separate", borderSpacing: "12px 10px" }}
+                >
+                  <tbody>
+                    <tr>
+                      <td>
+                        <Field label="Name">
+                          <input value={form.name} onChange={(event) => patch("name", event.target.value)} required />
+                        </Field>
+                      </td>
+                      <td>
+                        <Field label="Group">
+                          <select
+                            value={form.group}
+                            onChange={(event) => patch("group", event.target.value)}
+                            aria-label="Product group"
+                          >
+                            {[
+                              ...groups,
+                              { id: "caps", label: "Caps" },
+                              { id: "bottles", label: "Bottles" },
+                              { id: "desk", label: "Desk" },
+                              { id: "power", label: "Power" },
+                              { id: "towels", label: "Towels" },
+                              { id: "sets", label: "Sets" },
+                            ]
+                              .filter(
+                                (group, index, all) => all.findIndex((item) => item.id === group.id) === index
+                              )
+                              .map((group) => (
+                                <option key={group.id} value={group.id}>
+                                  {group.label}
+                                </option>
+                              ))}
+                          </select>
+                        </Field>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <Field label="Badge">
+                          <input
+                            value={form.badge}
+                            onChange={(event) => patch("badge", event.target.value)}
+                            placeholder="Sale, New…"
+                          />
+                        </Field>
+                      </td>
+                      <td>
+                        <Field label="Sizes">
+                          <input
+                            value={form.sizes}
+                            onChange={(event) => patch("sizes", event.target.value)}
+                            placeholder="S, M, L, XL"
+                          />
+                        </Field>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <Field label="Price (USD)">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={form.price}
+                            onChange={(event) => patch("price", event.target.value)}
+                          />
+                        </Field>
+                      </td>
+                      <td>
+                        <Field label="Compare at">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={form.compareAt}
+                            onChange={(event) => patch("compareAt", event.target.value)}
+                            placeholder="Optional"
+                          />
+                        </Field>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <Field label="Stock">
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            value={form.stock}
+                            onChange={(event) => patch("stock", event.target.value)}
+                            placeholder="Blank = open"
+                          />
+                        </Field>
+                      </td>
+                      <td>
+                        <Field label="Flags">
+                          <div className="admin-inline-checks">
+                            <span className="admin-check">
+                              <input
+                                type="checkbox"
+                                checked={form.featured}
+                                onChange={(event) => patch("featured", event.target.checked)}
+                              />
+                              Featured
+                            </span>
+                            <span className="admin-check">
+                              <input
+                                type="checkbox"
+                                checked={form.hidden}
+                                onChange={(event) => patch("hidden", event.target.checked)}
+                              />
+                              Hidden
+                            </span>
+                          </div>
+                        </Field>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <Field label="Short blurb">
+                          <textarea rows={2} value={form.blurb} onChange={(event) => patch("blurb", event.target.value)} />
+                        </Field>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan={2}>
+                        <Field label="Details">
+                          <textarea rows={3} value={form.details} onChange={(event) => patch("details", event.target.value)} />
+                        </Field>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+
+              <section className="admin-panel">
+                <h3>Pictures</h3>
+                <div className="admin-media">
+                  <div className="admin-media-main">
+                    <img src={form.image || "/images/polo-navy.png"} alt="" />
+                    <div>
+                      <p>Main picture</p>
+                      <label className="btn-dark admin-upload">
+                        <Upload size={16} /> Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={(event) => onImage(event.target.files?.[0])}
+                        />
+                      </label>
+                      <input
+                        value={form.image}
+                        onChange={(event) => patch("image", event.target.value)}
+                        placeholder="/images/... or URL"
+                      />
+                    </div>
+                  </div>
+
+                  {form.colors?.length > 0 ? (
+                    <div className="admin-colors">
+                      <h4>Colour variants</h4>
+                      {form.colors.map((color) => (
+                        <div key={color.name} className="admin-color-row">
+                          <img src={color.image || form.image} alt="" />
+                          <span>{color.name}</span>
+                          <label className="btn-ghost-ink admin-upload">
+                            <Upload size={14} /> Replace
+                            <input
+                              type="file"
+                              accept="image/*"
+                              hidden
+                              onChange={(event) => onImage(event.target.files?.[0], color.name)}
+                            />
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </section>
+
               <div className="admin-actions">
                 <button type="submit" className="btn-lime" disabled={busy}>
-                  <Save size={16} /> {busy ? "Saving…" : "Save"}
+                  <Save size={16} /> {busy ? "Saving…" : "Save changes"}
                 </button>
                 {form.id ? (
                   <>
-                    <button type="button" className="btn-ghost-ink" onClick={toggleHidden}>
+                    <button type="button" className="btn-ghost-ink" onClick={toggleHidden} disabled={busy}>
                       {form.hidden ? <Eye size={16} /> : <EyeOff size={16} />}
-                      {form.hidden ? "Show" : "Hide"}
+                      {form.hidden ? "Show in shop" : "Hide from shop"}
                     </button>
-                    <button type="button" className="btn-ghost-ink danger" onClick={onDelete}>
+                    <button type="button" className="btn-ghost-ink danger" onClick={onDelete} disabled={busy}>
                       <Trash2 size={16} /> Delete
                     </button>
                   </>

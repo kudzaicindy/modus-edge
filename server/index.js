@@ -1,7 +1,7 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import app from "./app.js";
-import { connectDb } from "./db.js";
+import { connectDb, isDbReady } from "./db.js";
 
 const port = Number(process.env.PORT || 3001);
 
@@ -10,14 +10,14 @@ async function ensureDb(label = "startup") {
     console.warn("Warning: MONGODB_URI is missing. Set it in .env");
     return false;
   }
-  if (mongoose.connection.readyState === 1) return true;
+  if (isDbReady()) return true;
   try {
     await connectDb();
     console.log(`MongoDB connected (${label})`);
     return true;
   } catch (error) {
     console.error(`MongoDB unavailable (${label}):`, error.message);
-    if (label === "startup") {
+    if (label === "startup" || label === "retry") {
       console.error(
         "Fix: Atlas → Network Access → Add IP Address → Allow Access from Anywhere (0.0.0.0/0), and confirm the cluster is not paused."
       );
@@ -31,13 +31,14 @@ async function start() {
 
   app.listen(port, () => {
     console.log(`Catalogue API on http://localhost:${port}`);
+    console.log(`DB status: ${isDbReady() ? "connected" : "disconnected (using seed fallback for reads)"}`);
   });
 
   setInterval(() => {
-    if (process.env.MONGODB_URI && mongoose.connection.readyState !== 1) {
+    if (process.env.MONGODB_URI && !isDbReady()) {
       ensureDb("retry");
     }
-  }, 30000);
+  }, 15000);
 }
 
 process.on("uncaughtException", (error) => {
