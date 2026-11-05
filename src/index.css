@@ -1846,6 +1846,15 @@ ul { margin: 0; }
   align-items: center;
   gap: 6px;
   margin: 3px 0 1px;
+  position: relative;
+  z-index: 2;
+}
+.shop-card-colors .swatch,
+.shop-card-colors .color-chip {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  cursor: pointer;
 }
 .shop-card-colors .palette,
 .shop-card-colors .palette-sm {

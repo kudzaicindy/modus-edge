@@ -85,10 +85,44 @@ export async function fetchCatalog() {
   return applyState(data);
 }
 
+export function applyLocalSeed() {
+  return applyState({
+    overrides: {},
+    extras: [],
+    deleted: [],
+    products: seedProducts,
+  });
+}
+
+const seedById = new Map(seedProducts.map((product) => [product.id, product]));
+
+function hydrateColors(product) {
+  const seed = seedById.get(product.id);
+  const seedColors = seed?.colors || [];
+  const liveColors = Array.isArray(product.colors) ? product.colors : [];
+
+  if (!liveColors.length && seedColors.length) {
+    return seedColors.map((color) => ({ ...color }));
+  }
+
+  return liveColors.map((color) => {
+    const next = { ...color };
+    if (!next.image) {
+      const match =
+        seedColors.find((item) => item.name === next.name) ||
+        seedColors.find((item) => item.image && item.name?.toLowerCase() === String(next.name || "").toLowerCase());
+      if (match?.image) next.image = match.image;
+    }
+    return next;
+  });
+}
+
 function cloneProduct(product) {
+  const colors = hydrateColors(product);
   return {
     ...product,
-    colors: product.colors ? product.colors.map((color) => ({ ...color })) : undefined,
+    image: product.image || seedById.get(product.id)?.image,
+    colors: colors.length ? colors : undefined,
     sizes: product.sizes ? [...product.sizes] : undefined,
     highlights: product.highlights ? [...product.highlights] : undefined,
     specs: product.specs ? product.specs.map((row) => [...row]) : undefined,
@@ -114,7 +148,16 @@ function applyOverride(product, patch) {
   if (Object.prototype.hasOwnProperty.call(patch, "images") && patch.images) {
     next.images = [...patch.images];
   }
+  next.colors = hydrateColors(next);
   return next;
+}
+
+function finalizeProduct(product) {
+  const cloned = cloneProduct(product);
+  return {
+    ...cloned,
+    colors: hydrateColors(cloned),
+  };
 }
 
 export function buildCatalog(includeHidden = false) {
@@ -123,11 +166,11 @@ export function buildCatalog(includeHidden = false) {
   const source = Array.isArray(state.products) && state.products.length ? state.products : seedProducts;
   const base = source
     .filter((product) => !deleted.has(product.id))
-    .map((product) => applyOverride(cloneProduct(product), state.overrides[product.id]));
+    .map((product) => applyOverride(finalizeProduct(product), state.overrides[product.id]));
 
   const extras = state.extras
     .filter((product) => product?.id && !deleted.has(product.id))
-    .map((product) => applyOverride(cloneProduct(product), state.overrides[product.id]));
+    .map((product) => applyOverride(finalizeProduct(product), state.overrides[product.id]));
 
   const merged = [...base];
   extras.forEach((product) => {

@@ -3,6 +3,7 @@ import {
   CATALOG_EVENT,
   adminLogin,
   adminLogout,
+  applyLocalSeed,
   buildCatalog,
   deleteProduct as storeDelete,
   exportCatalog,
@@ -48,6 +49,7 @@ export function CatalogProvider({ children }) {
         if (!alive) return;
         console.error(err);
         setError(err.message || "Could not load catalogue from server");
+        applyLocalSeed();
         refresh();
         setReady(true);
       });
@@ -99,6 +101,11 @@ export function CatalogProvider({ children }) {
     refresh();
   }, [refresh]);
 
+  const findProduct = useCallback(
+    (id) => findCatalogProduct(id, { includeHidden: true }),
+    [bundle.revision]
+  );
+
   const value = useMemo(
     () => ({
       products: bundle.products,
@@ -106,7 +113,7 @@ export function CatalogProvider({ children }) {
       revision: bundle.revision,
       ready,
       error,
-      findProduct: (id) => findCatalogProduct(id, { includeHidden: true }),
+      findProduct,
       upsertProduct,
       deleteProduct,
       setProductImage,
@@ -124,6 +131,7 @@ export function CatalogProvider({ children }) {
       bundle,
       ready,
       error,
+      findProduct,
       upsertProduct,
       deleteProduct,
       setProductImage,

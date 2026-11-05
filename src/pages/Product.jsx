@@ -14,7 +14,7 @@ export default function Product() {
   const [params] = useSearchParams();
   const colorQuery = params.get("color") || "";
   const { findProduct, products, revision } = useCatalog();
-  const product = findProduct(id);
+  const product = useMemo(() => findProduct(id), [findProduct, id, revision]);
   const aliasColor = { navy: "Navy", crew: "Pink" }[id] || "";
   useTitle(product ? product.name : "Product");
   const { add } = useCart();
@@ -22,6 +22,7 @@ export default function Product() {
   const [shot, setShot] = useState(0);
   const [color, setColor] = useState(0);
   const [size, setSize] = useState(0);
+  const [view, setView] = useState("color");
 
   const thumbs = useMemo(() => {
     if (!product) return [];
@@ -34,11 +35,12 @@ export default function Product() {
         ].filter((src) => src && !LINEUP_RE.test(src))
       ),
     ];
-  }, [product]);
+  }, [product?.id, product?.image, product?.images, product?.colors]);
 
   useEffect(() => {
     setQty(1);
     setSize(0);
+    setView("color");
     const want = colorQuery || aliasColor;
     const at = product?.colors?.findIndex((option) => option.name === want);
     const index = at >= 0 ? at : 0;
@@ -46,7 +48,8 @@ export default function Product() {
     const next = product?.colors?.[index]?.image || product?.image;
     const shotAt = next ? thumbs.indexOf(next) : 0;
     setShot(shotAt >= 0 ? shotAt : 0);
-  }, [id, colorQuery, product, aliasColor, thumbs]);
+    // Only reset when navigating to another product / colour URL — not on every render.
+  }, [id, colorQuery, aliasColor, product?.id]);
 
   if (!product || product.hidden) {
     return (
@@ -69,19 +72,25 @@ export default function Product() {
   const related = [...same, ...extra].slice(0, 8);
   const chosen = product.colors?.[color];
   const cat = resolveCat(product.group);
-  const photo = thumbs[shot] || chosen?.image || product.image;
+  const photo =
+    view === "color" && chosen?.image
+      ? chosen.image
+      : thumbs[shot] || chosen?.image || product.image;
   const facts = (product.specs || []).slice(0, 4);
   const colourCount = product.colors?.length || 0;
 
   function pickColor(index) {
     setColor(index);
+    setView("color");
     const next = product.colors?.[index]?.image;
-    const at = next ? thumbs.indexOf(next) : -1;
-    setShot(at >= 0 ? at : 0);
+    if (!next) return;
+    const at = thumbs.indexOf(next);
+    if (at >= 0) setShot(at);
   }
 
   function pickShot(index) {
     setShot(index);
+    setView("gallery");
     const match = product.colors?.findIndex((option) => option.image === thumbs[index]);
     if (match >= 0) setColor(match);
   }
