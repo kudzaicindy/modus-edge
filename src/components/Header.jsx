@@ -1,16 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { ChevronDown, Menu, ShoppingBag, X } from "lucide-react";
 import Mark from "./Mark";
-import { shopFilters } from "../data";
+import { useCatalog } from "../catalog";
+import { shopFilters as seedShopFilters } from "../data";
 import { useCart } from "../cart";
-
-const productLinks = [
-  { to: "/shop", label: "All products" },
-  ...shopFilters
-    .filter((filter) => filter.id !== "all")
-    .map((filter) => ({ to: `/shop?cat=${filter.id}`, label: filter.label })),
-];
 
 const links = [
   { to: "/services", label: "Services" },
@@ -20,6 +14,17 @@ const links = [
 
 export default function Header() {
   const { count, setOpen } = useCart();
+  const { shopFilters: liveFilters } = useCatalog();
+  const shopFilters = liveFilters?.length ? liveFilters : seedShopFilters;
+  const productLinks = useMemo(
+    () => [
+      { to: "/shop", label: "All products" },
+      ...shopFilters
+        .filter((filter) => filter.id !== "all")
+        .map((filter) => ({ to: `/shop?cat=${filter.id}`, label: filter.label })),
+    ],
+    [shopFilters]
+  );
   const [menu, setMenu] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const location = useLocation();

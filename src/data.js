@@ -73,9 +73,62 @@ const catAliases = {
   power: "power-banks",
 };
 
+/** Admin-created categories merged into shop filters at runtime. */
+let extraCategories = [];
+
+export function titleCaseGroup(value) {
+  return String(value || "")
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+export function normalizeCategory(input) {
+  if (!input) return null;
+  if (typeof input === "string") {
+    const id = String(input)
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    if (!id || id === "all") return null;
+    return { id, label: titleCaseGroup(id) };
+  }
+  const id = String(input.id || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  if (!id || id === "all") return null;
+  const label = String(input.label || titleCaseGroup(id)).trim() || titleCaseGroup(id);
+  return { id, label };
+}
+
+export function setExtraCategories(list) {
+  const seen = new Set(shopFilters.map((filter) => filter.id));
+  const next = [];
+  for (const item of Array.isArray(list) ? list : []) {
+    const cat = normalizeCategory(item);
+    if (!cat || seen.has(cat.id)) continue;
+    seen.add(cat.id);
+    next.push(cat);
+  }
+  extraCategories = next;
+  return extraCategories;
+}
+
+export function getExtraCategories() {
+  return extraCategories.map((item) => ({ ...item }));
+}
+
+export function getShopFilters() {
+  return [...shopFilters, ...extraCategories.map((item) => ({ ...item }))];
+}
+
 export function resolveCat(raw) {
   const mapped = catAliases[raw] || raw || "all";
-  return shopFilters.some((filter) => filter.id === mapped) ? mapped : "all";
+  return getShopFilters().some((filter) => filter.id === mapped) ? mapped : "all";
 }
 
 export function groupsFor(cat) {
@@ -84,7 +137,15 @@ export function groupsFor(cat) {
 }
 
 export function labelForGroup(group) {
-  return shopFilters.find((filter) => filter.id === resolveCat(group))?.label || group;
+  if (!group) return "";
+  const filters = getShopFilters();
+  const direct = filters.find((filter) => filter.id === group);
+  if (direct) return direct.label;
+  const resolved = resolveCat(group);
+  if (resolved !== "all") {
+    return filters.find((filter) => filter.id === resolved)?.label || titleCaseGroup(group);
+  }
+  return titleCaseGroup(group);
 }
 
 export const productAliases = {
@@ -135,12 +196,25 @@ const TONE = {
   gray: "#8b939c",
   charcoal: "#4a5058",
   silver: "#c5c9ce",
+  copper: "#b87333",
+  bronze: "#a67c52",
+  magenta: "#c2185b",
+  fuchsia: "#c2185b",
+  violet: "#6b4c9a",
+  gunmetal: "#4a5058",
   clear: "#dbe7ee",
+  "rose gold": "#c9a227",
   "hi-vis": "#d4e600",
 };
 
 function toneFrom(part) {
-  const text = String(part || "").toLowerCase().trim();
+  const text = String(part || "")
+    .toLowerCase()
+    .trim()
+    // "Silver 2", "Navy 3" → keep the colour word for swatches
+    .replace(/\s+\d+$/g, "")
+    .replace(/\s+/g, " ");
+  if (!text || text === "as shown" || text === "default") return null;
   const keys = Object.keys(TONE).sort((a, b) => b.length - a.length);
   const key = keys.find((item) => {
     if (text === item) return true;
@@ -2942,7 +3016,7 @@ export const products = [
   {
     id: "mini-fan",
     name: "Mini Desk Fan",
-    group: "promo",
+    group: "desk",
     price: 16,
     compareAt: null,
     badge: null,
@@ -6080,7 +6154,7 @@ export const products = [
   {
     id: "midu-pts07",
     name: "Short Sleeve Colorblock Team Polo",
-    group: "promo",
+    group: "shirts",
     price: 10.25,
     compareAt: null,
     badge: "New",
@@ -6107,7 +6181,7 @@ export const products = [
   {
     id: "midu-rc01",
     name: "EVA Transparent Hooded Raincoat",
-    group: "promo",
+    group: "jackets",
     price: 13.0,
     compareAt: null,
     badge: "New",
@@ -6135,7 +6209,7 @@ export const products = [
   {
     id: "midu-lst04",
     name: "Long Sleeve Colorblock Sports Polo",
-    group: "promo",
+    group: "shirts",
     price: 18.5,
     compareAt: null,
     badge: "New",
@@ -6161,7 +6235,7 @@ export const products = [
   {
     id: "midu-vt01",
     name: "Reflective vest",
-    group: "promo",
+    group: "accessories",
     price: 4,
     compareAt: null,
     badge: "New",
@@ -6184,7 +6258,7 @@ export const products = [
   {
     id: "midu-ww01",
     name: "Product: workwear",
-    group: "promo",
+    group: "jackets",
     price: 31.75,
     compareAt: null,
     badge: "New",
@@ -6204,7 +6278,7 @@ export const products = [
   {
     id: "midu-pts45",
     name: "Yarn: 60/3",
-    group: "promo",
+    group: "shirts",
     price: 26.12,
     compareAt: null,
     badge: "New",
@@ -6233,7 +6307,7 @@ export const products = [
   {
     id: "midu-lst01",
     name: "Content: polyester/spandex",
-    group: "promo",
+    group: "shirts",
     price: 13.75,
     compareAt: null,
     badge: "New",
@@ -6253,7 +6327,7 @@ export const products = [
   {
     id: "midu-ww04a",
     name: "Fabric weight: 240G",
-    group: "promo",
+    group: "jackets",
     price: 21.5,
     compareAt: null,
     badge: "New",

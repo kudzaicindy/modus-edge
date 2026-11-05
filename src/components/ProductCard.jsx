@@ -11,13 +11,14 @@ function ShopSwatches({ colors, tone, onChange }) {
     return <ColorPalette options={colors} value={tone} onChange={onChange} showLabel={false} size="sm" />;
   }
   const only = colors[0];
-  if (!only?.name || !isPaintedColor(only.name)) return null;
+  if (!only?.name || /^(as shown|default)$/i.test(only.name)) return null;
+  if (!only.image && !isPaintedColor(only.name)) return null;
   return (
     <div className="palette palette-sm">
       <div className="palette-dots" role="listbox" aria-label="Colour">
         <span
-          className={`swatch on${swatchIsLight(only.name) ? " light" : ""}`}
-          style={swatchStyle(only.name)}
+          className={`swatch on${only.image ? " swatch-photo" : swatchIsLight(only.name) ? " light" : ""}`}
+          style={only.image ? { backgroundImage: `url(${only.image})` } : swatchStyle(only.name)}
           title={only.name}
           aria-label={only.name}
         />

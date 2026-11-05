@@ -5,7 +5,8 @@ import { fileURLToPath } from "url";
 import { products as seedProducts } from "../src/data.js";
 import { authenticateAdmin, authenticateEnvAdmin } from "./adminModel.js";
 import { connectDb, dbRecentlyFailed, isDbReady } from "./db.js";
-import { Catalog, emptyCatalog, getCatalogDoc, toState } from "./catalogModel.js";
+import { Catalog, emptyCatalog, ensureCategory, getCatalogDoc, toState } from "./catalogModel.js";
+import { shopFilters } from "../src/data.js";
 import { Product, productPayload, seedUpsertOp } from "./productModel.js";
 import { isSeedProduct } from "./seedIds.js";
 
@@ -21,9 +22,12 @@ async function listProducts() {
 }
 
 async function catalogResponse(doc) {
+  const products = await listProducts();
+  const state = toState(doc);
   return {
-    ...toState(doc),
-    products: await listProducts(),
+    ...state,
+    categories: categoriesFromProducts(products, state.categories),
+    products,
   };
 }
 
@@ -32,10 +36,40 @@ function seedCatalogResponse() {
     overrides: {},
     extras: [],
     deleted: [],
+    categories: [],
     updatedAt: null,
     products: seedProducts,
     source: "seed",
   };
+}
+
+function knownFilterIds() {
+  return new Set(shopFilters.map((filter) => filter.id));
+}
+
+function categoriesFromProducts(products, existing = []) {
+  const known = knownFilterIds();
+  const byId = new Map();
+  for (const item of existing) {
+    if (item?.id && !known.has(item.id)) byId.set(item.id, item);
+  }
+  for (const product of products || []) {
+    const id = String(product?.group || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    if (!id || id === "all" || known.has(id) || byId.has(id)) continue;
+    // Skip legacy aliases that already map into seed filters.
+    if (["caps", "bottles", "towels", "gifts", "sets", "power"].includes(id)) continue;
+    const label = id
+      .split("-")
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+    byId.set(id, { id, label });
+  }
+  return [...byId.values()];
 }
 
 const app = express();
@@ -163,9 +197,10 @@ app.put("/api/catalog", withDb, requireAdmin, async (req, res) => {
     const overrides = req.body?.overrides && typeof req.body.overrides === "object" ? req.body.overrides : {};
     const extras = Array.isArray(req.body?.extras) ? req.body.extras : [];
     const deleted = Array.isArray(req.body?.deleted) ? req.body.deleted : [];
+    const categories = Array.isArray(req.body?.categories) ? req.body.categories : [];
     const doc = await Catalog.findOneAndUpdate(
       { key: "main" },
-      { overrides, extras, deleted },
+      { overrides, extras, deleted, categories },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
     res.json(await catalogResponse(doc));
@@ -223,6 +258,25 @@ app.put("/api/catalog/product", withDb, requireAdmin, async (req, res) => {
         ...(doc.extras || []).filter((item) => item.id !== product.id),
         payload,
       ];
+    }
+
+    const categoryInput = product.category || {
+      id: product.group,
+      label: product.groupLabel || product.categoryLabel,
+    };
+    if (categoryInput?.id || product.group) {
+      const known = knownFilterIds();
+      const id = String(categoryInput.id || product.group || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      if (id && id !== "all" && !known.has(id) && !["caps", "bottles", "towels", "gifts", "sets", "power"].includes(id)) {
+        ensureCategory(doc, {
+          id,
+          label: categoryInput.label || product.groupLabel || product.categoryLabel,
+        });
+      }
     }
 
     doc.markModified("overrides");

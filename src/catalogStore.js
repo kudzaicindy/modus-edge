@@ -1,4 +1,11 @@
-import { productAliases, products as seedProducts } from "./data";
+import {
+  normalizeCategory,
+  productAliases,
+  products as seedProducts,
+  setExtraCategories,
+  shopFilters,
+  titleCaseGroup,
+} from "./data";
 
 export const AUTH_KEY = "modus-edge-admin";
 export const CATALOG_EVENT = "modus-catalog-changed";
@@ -9,11 +16,30 @@ const emptyState = () => ({
   overrides: {},
   extras: [],
   deleted: [],
+  categories: [],
   products: null,
 });
 
 let memory = emptyState();
 let loaded = false;
+
+const knownFilterIds = new Set(shopFilters.map((filter) => filter.id));
+const legacyGroups = new Set(["caps", "bottles", "towels", "gifts", "sets", "power"]);
+
+function mergeCategories(list, products) {
+  const byId = new Map();
+  for (const item of Array.isArray(list) ? list : []) {
+    const cat = normalizeCategory(item);
+    if (!cat || knownFilterIds.has(cat.id)) continue;
+    byId.set(cat.id, cat);
+  }
+  for (const product of products || []) {
+    const cat = normalizeCategory(product?.group);
+    if (!cat || knownFilterIds.has(cat.id) || legacyGroups.has(cat.id) || byId.has(cat.id)) continue;
+    byId.set(cat.id, { id: cat.id, label: titleCaseGroup(cat.id) });
+  }
+  return [...byId.values()];
+}
 
 function apiBase() {
   return import.meta.env.VITE_API_URL || "";
@@ -55,12 +81,16 @@ function notify() {
 }
 
 function applyState(state) {
+  const products = Array.isArray(state?.products) && state.products.length ? state.products : null;
+  const categories = mergeCategories(state?.categories, products || seedProducts);
   memory = {
     overrides: state?.overrides && typeof state.overrides === "object" ? state.overrides : {},
     extras: Array.isArray(state?.extras) ? state.extras : [],
     deleted: Array.isArray(state?.deleted) ? state.deleted : [],
-    products: Array.isArray(state?.products) && state.products.length ? state.products : null,
+    categories,
+    products,
   };
+  setExtraCategories(categories);
   loaded = true;
   notify();
   return memory;
@@ -71,8 +101,13 @@ export function loadState() {
     overrides: { ...memory.overrides },
     extras: memory.extras.map((item) => ({ ...item })),
     deleted: [...memory.deleted],
+    categories: memory.categories.map((item) => ({ ...item })),
     products: memory.products ? memory.products.map((item) => ({ ...item })) : null,
   };
+}
+
+export function listCategories() {
+  return memory.categories.map((item) => ({ ...item }));
 }
 
 export async function fetchCatalog() {
@@ -90,6 +125,7 @@ export function applyLocalSeed() {
     overrides: {},
     extras: [],
     deleted: [],
+    categories: [],
     products: seedProducts,
   });
 }
@@ -260,10 +296,22 @@ function normalizeProduct(input) {
 
 export async function upsertProduct(input) {
   const product = normalizeProduct(input);
+  const category = normalizeCategory(
+    input.category || {
+      id: product.group,
+      label: input.groupLabel || input.categoryLabel || titleCaseGroup(product.group),
+    }
+  );
   const res = await fetch(`${apiBase()}/api/catalog/product`, {
     method: "PUT",
     headers: adminHeaders(),
-    body: JSON.stringify({ product }),
+    body: JSON.stringify({
+      product: {
+        ...product,
+        category,
+        groupLabel: category?.label,
+      },
+    }),
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -296,6 +344,7 @@ export async function importCatalog(raw) {
       overrides: parsed.overrides || {},
       extras: parsed.extras || [],
       deleted: parsed.deleted || [],
+      categories: parsed.categories || memory.categories || [],
     }),
   });
   const body = await res.json().catch(() => ({}));

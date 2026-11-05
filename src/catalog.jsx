@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { getShopFilters } from "./data";
 import {
   CATALOG_EVENT,
   adminLogin,
@@ -11,6 +12,7 @@ import {
   findCatalogProduct,
   importCatalog as storeImport,
   isAdminAuthed,
+  listCategories,
   readFileAsDataUrl,
   resetCatalog as storeReset,
   setProductImage as storeSetImage,
@@ -23,6 +25,8 @@ function snapshot() {
   return {
     products: buildCatalog(false),
     adminProducts: buildCatalog(true),
+    categories: listCategories(),
+    shopFilters: getShopFilters(),
     revision: Date.now(),
   };
 }
@@ -110,6 +114,8 @@ export function CatalogProvider({ children }) {
     () => ({
       products: bundle.products,
       adminProducts: bundle.adminProducts,
+      categories: bundle.categories,
+      shopFilters: bundle.shopFilters,
       revision: bundle.revision,
       ready,
       error,

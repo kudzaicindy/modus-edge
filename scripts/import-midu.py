@@ -39,7 +39,8 @@ CATEGORIES = {
     "desk-organizers": ("desk", 2),
     "lanyards-badges": ("lanyards", 3),
     "hats": ("hats", 6),
-    "apparel": ("promo", 8),
+    # Map apparel into real shop lines (not "Other promotional")
+    "apparel": ("shirts", 8),
 }
 
 # Skip titles that collide with existing local photography SKUs

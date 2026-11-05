@@ -775,11 +775,18 @@ ul { margin: 0; }
   padding: 0;
   cursor: pointer;
   background: #8a93a0;
+  background-size: cover;
+  background-position: center;
   transition: transform 140ms ease;
 }
 .swatch:hover { transform: scale(1.06); }
 .palette-sm .swatch { width: 16px; height: 16px; }
 .swatch.light { border-color: #c9ced6; }
+.swatch.swatch-photo {
+  border-radius: 8px;
+  background-color: #f5f6f4;
+}
+.palette-sm .swatch.swatch-photo { border-radius: 5px; }
 .swatch.on {
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111;
 }
@@ -2799,6 +2806,7 @@ ul { margin: 0; }
   font-size: 12px;
 }
 .admin-group-fields { display: grid; gap: 6px; }
+.admin-group-slug { margin: 0; font-size: 12px; }
 .admin-colors { display: grid; gap: 8px; }
 .admin-colors h4 { margin: 4px 0 0; font-size: 13px; }
 .admin-color-hint { margin: 0; font-size: 12px; }

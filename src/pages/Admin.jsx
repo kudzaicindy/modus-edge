@@ -22,26 +22,24 @@ import {
   useCatalog,
 } from "../catalog";
 import ImageCropModal from "../components/ImageCropModal";
-import { groupsFor, labelForGroup, money, shopFilters } from "../data";
+import { groupsFor, labelForGroup, money, shopFilters, titleCaseGroup } from "../data";
 import { useTitle } from "../useTitle";
 import "./Admin.css";
 
-const lineFilters = shopFilters.filter((filter) => filter.id !== "all");
-
-const catalogGroups = [
-  ...lineFilters,
+const legacyGroups = [
   { id: "caps", label: "Caps" },
   { id: "bottles", label: "Bottles" },
   { id: "sets", label: "Gift sets" },
   { id: "towels", label: "Towels" },
   { id: "power", label: "Power (legacy)" },
   { id: "gifts", label: "Gifts (legacy)" },
-].filter((group, index, all) => all.findIndex((item) => item.id === group.id) === index);
+];
 
 const blank = () => ({
   id: "",
   name: "",
   group: "shirts",
+  groupLabel: "",
   price: 0,
   compareAt: "",
   stock: "",
@@ -68,6 +66,7 @@ function toForm(product) {
     id: product.id,
     name: product.name || "",
     group: product.group || "gifts",
+    groupLabel: labelForGroup(product.group || "gifts"),
     price: product.price ?? 0,
     compareAt: product.compareAt ?? "",
     stock: product.stock ?? "",
@@ -101,6 +100,8 @@ export default function Admin() {
   useTitle("Admin");
   const {
     adminProducts,
+    categories,
+    shopFilters: liveShopFilters,
     upsertProduct,
     deleteProduct,
     setProductImage,
@@ -109,6 +110,11 @@ export default function Admin() {
     resetCatalog,
     error: catalogError,
   } = useCatalog();
+
+  const lineFilters = useMemo(
+    () => (liveShopFilters || shopFilters).filter((filter) => filter.id !== "all"),
+    [liveShopFilters]
+  );
 
   const [authed, setAuthed] = useState(isAdminAuthed);
   const [password, setPassword] = useState("");
@@ -130,9 +136,13 @@ export default function Admin() {
       .map((product) => product.group)
       .filter(Boolean)
       .map((id) => ({ id, label: labelForGroup(id) }));
-    const merged = [...catalogGroups, ...fromCatalog];
+    const fromCategories = (categories || []).map((item) => ({
+      id: item.id,
+      label: item.label || labelForGroup(item.id),
+    }));
+    const merged = [...lineFilters, ...legacyGroups, ...fromCategories, ...fromCatalog];
     return merged.filter((group, index, all) => all.findIndex((item) => item.id === group.id) === index);
-  }, [adminProducts]);
+  }, [adminProducts, categories, lineFilters]);
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -199,7 +209,9 @@ export default function Admin() {
   }
 
   function startNew() {
-    setForm(blank());
+    const next = blank();
+    next.groupLabel = labelForGroup(next.group);
+    setForm(next);
     setCustomGroup(false);
     setColorDraft("");
     document.getElementById("admin-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -249,17 +261,21 @@ export default function Admin() {
       flash("Name is required.", "bad");
       return;
     }
-    const group = slugGroup(form.group);
+    const groupLabel = String(form.groupLabel || form.group || "").trim();
+    const group = slugGroup(form.group || groupLabel);
     if (!group) {
-      flash("Pick or type a group.", "bad");
+      flash("Pick or type a category.", "bad");
       return;
     }
     const wasNew = !form.id;
+    const createdCategory = customGroup || !groupOptions.some((item) => item.id === group);
     setBusy(true);
     try {
       const saved = await upsertProduct({
         ...form,
         group,
+        groupLabel: groupLabel || titleCaseGroup(group),
+        category: { id: group, label: groupLabel || titleCaseGroup(group) },
         compareAt: form.compareAt === "" ? null : Number(form.compareAt),
         stock: form.stock === "" ? null : Number(form.stock),
         badge: form.badge || null,
@@ -270,10 +286,16 @@ export default function Admin() {
         colors: form.colors || [],
       });
       setForm(toForm(saved));
-      setCustomGroup(!groupOptions.some((item) => item.id === saved.group));
+      setCustomGroup(false);
       const stockLabel =
         saved.stock === 0 ? "out of stock" : saved.stock == null ? "stock open" : `${saved.stock} in stock`;
-      flash(wasNew ? `Added ${saved.name}.` : `Saved ${saved.name} · ${money(saved.price)} · ${stockLabel}.`);
+      flash(
+        createdCategory
+          ? `Saved ${saved.name} and created category “${groupLabel || titleCaseGroup(group)}”.`
+          : wasNew
+            ? `Added ${saved.name}.`
+            : `Saved ${saved.name} · ${money(saved.price)} · ${stockLabel}.`
+      );
     } catch (err) {
       flash(err.message || "Save failed. Check MongoDB / Vercel env.", "bad");
     } finally {
@@ -654,36 +676,53 @@ export default function Admin() {
                         </Field>
                       </td>
                       <td>
-                        <Field label="Group">
+                        <Field label="Category">
                           <div className="admin-group-fields">
                             <select
                               value={customGroup ? "__custom__" : form.group || "shirts"}
                               onChange={(event) => {
                                 if (event.target.value === "__custom__") {
                                   setCustomGroup(true);
-                                  patch("group", "");
+                                  setForm((prev) => ({ ...prev, group: "", groupLabel: "" }));
                                   return;
                                 }
                                 setCustomGroup(false);
-                                patch("group", event.target.value);
+                                const next = event.target.value;
+                                setForm((prev) => ({
+                                  ...prev,
+                                  group: next,
+                                  groupLabel: labelForGroup(next),
+                                }));
                               }}
-                              aria-label="Product group"
+                              aria-label="Product category"
                             >
                               {groupOptions.map((group) => (
                                 <option key={group.id} value={group.id}>
                                   {group.label}
                                 </option>
                               ))}
-                              <option value="__custom__">New group…</option>
+                              <option value="__custom__">New category…</option>
                             </select>
                             {customGroup ? (
-                              <input
-                                value={form.group}
-                                onChange={(event) => patch("group", event.target.value)}
-                                onBlur={(event) => patch("group", slugGroup(event.target.value))}
-                                placeholder="e.g. visors"
-                                aria-label="Custom group id"
-                              />
+                              <>
+                                <input
+                                  value={form.groupLabel}
+                                  onChange={(event) => {
+                                    const label = event.target.value;
+                                    setForm((prev) => ({
+                                      ...prev,
+                                      groupLabel: label,
+                                      group: slugGroup(label),
+                                    }));
+                                  }}
+                                  placeholder="Category name e.g. Visors"
+                                  aria-label="New category name"
+                                  required
+                                />
+                                {form.group ? (
+                                  <p className="muted admin-group-slug">Shop filter id: {form.group}</p>
+                                ) : null}
+                              </>
                             ) : null}
                           </div>
                         </Field>

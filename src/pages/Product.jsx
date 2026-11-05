@@ -162,13 +162,15 @@ export default function Product() {
               </div>
             )}
 
-            {product.colors?.length === 1 && (
+            {product.colors?.length === 1 &&
+            product.colors[0]?.name &&
+            !/^(as shown|default)$/i.test(product.colors[0].name) ? (
               <div className="product-option">
                 <p className="option-label">
                   Colour <strong>{product.colors[0].name}</strong>
                 </p>
               </div>
-            )}
+            ) : null}
 
             {product.sizes?.length > 0 && (
               <div className="product-option">

@@ -3,10 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { X } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { useCatalog } from "../catalog";
-import { groupsFor, isPaintedColor, resolveCat, shopFilters } from "../data";
+import { groupsFor, isPaintedColor, resolveCat, shopFilters as seedShopFilters } from "../data";
 import { useTitle } from "../useTitle";
-
-const sections = shopFilters.filter((filter) => filter.id !== "all");
 
 function ways(product) {
   return product.colors?.length ? product.colors : [{ name: "", image: product.image }];
@@ -22,7 +20,9 @@ function matchesColor(optionName, filter) {
 
 export default function Shop() {
   useTitle("Shop");
-  const { products, revision } = useCatalog();
+  const { products, revision, shopFilters: liveFilters } = useCatalog();
+  const shopFilters = liveFilters?.length ? liveFilters : seedShopFilters;
+  const sections = useMemo(() => shopFilters.filter((filter) => filter.id !== "all"), [shopFilters]);
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") || "";
   const cat = resolveCat(searchParams.get("cat") || "all");
@@ -118,7 +118,7 @@ export default function Shop() {
         items: tiles.filter((tile) => groupsFor(filter.id).includes(tile.product.group)),
       }))
       .filter((block) => block.items.length);
-  }, [q, sort, cat, inLine, color, tiles]);
+  }, [q, sort, cat, inLine, color, tiles, sections]);
 
   return (
     <section className="shop-page">
