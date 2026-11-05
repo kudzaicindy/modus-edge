@@ -21,11 +21,21 @@ import {
   readFileAsDataUrl,
   useCatalog,
 } from "../catalog";
-import { labelForGroup, money, shopFilters } from "../data";
+import { groupsFor, labelForGroup, money, shopFilters } from "../data";
 import { useTitle } from "../useTitle";
 import "./Admin.css";
 
-const groups = shopFilters.filter((filter) => filter.id !== "all");
+const lineFilters = shopFilters.filter((filter) => filter.id !== "all");
+
+const catalogGroups = [
+  ...lineFilters,
+  { id: "caps", label: "Caps" },
+  { id: "bottles", label: "Bottles" },
+  { id: "desk", label: "Desk" },
+  { id: "power", label: "Power" },
+  { id: "towels", label: "Towels" },
+  { id: "sets", label: "Sets" },
+].filter((group, index, all) => all.findIndex((item) => item.id === group.id) === index);
 
 const blank = () => ({
   id: "",
@@ -88,11 +98,11 @@ export default function Admin() {
     importCatalog,
     resetCatalog,
     error: catalogError,
-    ready,
   } = useCatalog();
 
   const [authed, setAuthed] = useState(isAdminAuthed);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
@@ -131,9 +141,10 @@ export default function Admin() {
 
   const list = useMemo(() => {
     const query = q.trim().toLowerCase();
+    const allowedGroups = groupsFor(groupFilter);
     return adminProducts
       .filter((product) => {
-        if (groupFilter !== "all" && product.group !== groupFilter) return false;
+        if (allowedGroups && !allowedGroups.includes(product.group)) return false;
         if (statusFilter !== "all" && statusOf(product) !== statusFilter) return false;
         if (!query) return true;
         return `${product.name} ${product.id} ${product.group}`.toLowerCase().includes(query);
@@ -319,13 +330,23 @@ export default function Admin() {
           <form className="admin-login-form" onSubmit={login}>
             <label>
               Password
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete="current-password"
-                placeholder="Enter admin password"
-              />
+              <span className="admin-password-field">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="current-password"
+                  placeholder="Enter admin password"
+                />
+                <button
+                  type="button"
+                  className="admin-password-toggle"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  {showPassword ? <EyeOff size={18} strokeWidth={2.1} /> : <Eye size={18} strokeWidth={2.1} />}
+                </button>
+              </span>
             </label>
             {error ? <p className="admin-note bad">{error}</p> : null}
             <button type="submit" className="btn-dark admin-login-btn" disabled={busy}>
@@ -345,10 +366,11 @@ export default function Admin() {
             <p className="admin-kicker">Staff desk</p>
             <h1>Catalogue</h1>
           </div>
-          <p className={`admin-status ${catalogError ? "bad" : ready ? "ok" : ""}`}>
-            {catalogError ? catalogError : ready ? "Connected to MongoDB" : "Connecting…"}
-            {busy ? " · Saving…" : ""}
-          </p>
+          {catalogError || busy ? (
+            <p className={`admin-status ${catalogError ? "bad" : ""}`}>
+              {catalogError || (busy ? "Saving…" : "")}
+            </p>
+          ) : null}
         </div>
         <div className="admin-bar-actions">
           <Link to="/shop" className="btn-lime">
@@ -415,43 +437,38 @@ export default function Admin() {
                 </button>
               </div>
 
-              <div className="admin-filters" role="tablist" aria-label="Status">
-                {[
-                  ["all", "All"],
-                  ["live", "Live"],
-                  ["hidden", "Hidden"],
-                  ["out", "Out"],
-                ].map(([id, label]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className={statusFilter === id ? "on" : ""}
-                    onClick={() => setStatusFilter(id)}
+              <div className="admin-filter-row">
+                <label className="admin-filter-field">
+                  <span className="admin-filter-title">Status</span>
+                  <select
+                    className="admin-select"
+                    value={statusFilter}
+                    aria-label="Status"
+                    onChange={(event) => setStatusFilter(event.target.value)}
                   >
-                    {label}
-                    <span>{counts[id] ?? 0}</span>
-                  </button>
-                ))}
-              </div>
+                    <option value="all">All ({counts.all})</option>
+                    <option value="live">Live ({counts.live})</option>
+                    <option value="hidden">Hidden ({counts.hidden})</option>
+                    <option value="out">Out ({counts.out})</option>
+                  </select>
+                </label>
 
-              <div className="admin-groups" role="tablist" aria-label="Groups">
-                <button
-                  type="button"
-                  className={groupFilter === "all" ? "on" : ""}
-                  onClick={() => setGroupFilter("all")}
-                >
-                  All lines
-                </button>
-                {groups.map((group) => (
-                  <button
-                    key={group.id}
-                    type="button"
-                    className={groupFilter === group.id ? "on" : ""}
-                    onClick={() => setGroupFilter(group.id)}
+                <label className="admin-filter-field">
+                  <span className="admin-filter-title">Category</span>
+                  <select
+                    className="admin-select"
+                    value={groupFilter}
+                    aria-label="Category"
+                    onChange={(event) => setGroupFilter(event.target.value)}
                   >
-                    {group.label}
-                  </button>
-                ))}
+                    <option value="all">All lines</option>
+                    {lineFilters.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
               <div className="admin-rows">
@@ -513,27 +530,22 @@ export default function Admin() {
                       <td>
                         <Field label="Group">
                           <select
-                            value={form.group}
+                            value={
+                              catalogGroups.some((group) => group.id === form.group)
+                                ? form.group
+                                : form.group || "gifts"
+                            }
                             onChange={(event) => patch("group", event.target.value)}
                             aria-label="Product group"
                           >
-                            {[
-                              ...groups,
-                              { id: "caps", label: "Caps" },
-                              { id: "bottles", label: "Bottles" },
-                              { id: "desk", label: "Desk" },
-                              { id: "power", label: "Power" },
-                              { id: "towels", label: "Towels" },
-                              { id: "sets", label: "Sets" },
-                            ]
-                              .filter(
-                                (group, index, all) => all.findIndex((item) => item.id === group.id) === index
-                              )
-                              .map((group) => (
-                                <option key={group.id} value={group.id}>
-                                  {group.label}
-                                </option>
-                              ))}
+                            {!catalogGroups.some((group) => group.id === form.group) && form.group ? (
+                              <option value={form.group}>{labelForGroup(form.group)}</option>
+                            ) : null}
+                            {catalogGroups.map((group) => (
+                              <option key={group.id} value={group.id}>
+                                {group.label}
+                              </option>
+                            ))}
                           </select>
                         </Field>
                       </td>

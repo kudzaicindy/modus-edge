@@ -40,7 +40,15 @@ export async function ensureAdmin(username, password) {
   return { created: true, username };
 }
 
+export function authenticateEnvAdmin(username, password) {
+  const envUser = String(process.env.ADMIN_USERNAME || "admin").trim() || "admin";
+  const envPass = String(process.env.ADMIN_PASSWORD || "");
+  if (!password || !envPass) return false;
+  return String(username || "admin") === envUser && String(password) === envPass;
+}
+
 export async function authenticateAdmin(username, password) {
+  if (authenticateEnvAdmin(username, password)) return true;
   const admin = await Admin.findOne({ username: username || "admin" });
   if (!admin) return false;
   return verifyPassword(password, admin.salt, admin.passwordHash);

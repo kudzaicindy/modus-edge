@@ -3,8 +3,8 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import { products as seedProducts } from "../src/data.js";
-import { authenticateAdmin } from "./adminModel.js";
-import { connectDb, isDbReady } from "./db.js";
+import { authenticateAdmin, authenticateEnvAdmin } from "./adminModel.js";
+import { connectDb, dbRecentlyFailed, isDbReady } from "./db.js";
 import { Catalog, emptyCatalog, getCatalogDoc, toState } from "./catalogModel.js";
 import { Product, productPayload } from "./productModel.js";
 import { isSeedProduct } from "./seedIds.js";
@@ -47,6 +47,12 @@ async function requireAdmin(req, res, next) {
   try {
     const password = req.header("x-admin-password") || req.body?.password || "";
     const username = req.header("x-admin-username") || req.body?.username || "admin";
+    if (authenticateEnvAdmin(username, password)) {
+      return next();
+    }
+    if (!isDbReady()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     const ok = await authenticateAdmin(username, password);
     if (!ok) {
       return res.status(401).json({ error: "Unauthorized" });
@@ -64,12 +70,24 @@ async function withDb(req, res, next) {
     return next();
   } catch (error) {
     console.error(error);
-    return res.status(503).json({ error: "Database unavailable", detail: error.message });
+    return res.status(503).json({
+      error: "Database unavailable",
+      detail: error.message,
+      hint: "Atlas → Network Access → allow your IP or 0.0.0.0/0. Shop still works from seed data.",
+    });
   }
 }
 
 /** Prefer DB, but allow public catalogue reads to fall back to seed data. */
 async function withDbOrSeed(req, res, next) {
+  if (!process.env.MONGODB_URI || dbRecentlyFailed()) {
+    req.catalogSource = "seed";
+    return next();
+  }
+  if (isDbReady()) {
+    req.catalogSource = "db";
+    return next();
+  }
   try {
     await connectDb();
     req.catalogSource = "db";
@@ -89,15 +107,38 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
-app.post("/api/admin/login", withDb, async (req, res) => {
+app.post("/api/admin/login", async (req, res) => {
   try {
     const username = String(req.body?.username || "admin").trim() || "admin";
     const password = String(req.body?.password || "");
+
+    // Local/dev fallback when Atlas is unreachable.
+    if (authenticateEnvAdmin(username, password)) {
+      return res.json({
+        ok: true,
+        username,
+        source: isDbReady() ? "env" : "env-offline",
+        db: isDbReady() ? "connected" : "disconnected",
+      });
+    }
+
+    if (!isDbReady()) {
+      try {
+        await connectDb();
+      } catch (error) {
+        return res.status(503).json({
+          error: "Database unavailable",
+          detail: error.message,
+          hint: "Use ADMIN_PASSWORD from .env, or whitelist your IP in Atlas Network Access.",
+        });
+      }
+    }
+
     const ok = await authenticateAdmin(username, password);
     if (!ok) {
       return res.status(401).json({ error: "Wrong username or password" });
     }
-    return res.json({ ok: true, username });
+    return res.json({ ok: true, username, source: "db", db: "connected" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Login failed" });

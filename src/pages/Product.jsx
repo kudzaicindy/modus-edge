@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { ShoppingBag } from "lucide-react";
 import ColorPalette from "../components/ColorPalette";
 import ProductCard from "../components/ProductCard";
 import { useCatalog } from "../catalog";
@@ -7,7 +8,7 @@ import { groupsFor, labelForGroup, money, resolveCat } from "../data";
 import { useCart } from "../cart";
 import { useTitle } from "../useTitle";
 
-const LINEUP_RE = /lineup|handle-colors|label-group|women-colors|women-grid/i;
+const LINEUP_RE = /lineup|handle-colors|label-group|women-colors|women-grid|-group\.|-pair\.|-rack\./i;
 
 export default function Product() {
   const { id } = useParams();
@@ -23,6 +24,7 @@ export default function Product() {
   const [color, setColor] = useState(0);
   const [size, setSize] = useState(0);
   const [view, setView] = useState("color");
+  const [branding, setBranding] = useState(false);
 
   const thumbs = useMemo(() => {
     if (!product) return [];
@@ -41,6 +43,7 @@ export default function Product() {
     setQty(1);
     setSize(0);
     setView("color");
+    setBranding(false);
     const want = colorQuery || aliasColor;
     const at = product?.colors?.findIndex((option) => option.name === want);
     const index = at >= 0 ? at : 0;
@@ -189,6 +192,14 @@ export default function Product() {
             )}
 
             <div className="buy-panel">
+              <label className="branding-check">
+                <input
+                  type="checkbox"
+                  checked={branding}
+                  onChange={(event) => setBranding(event.target.checked)}
+                />
+                <span>Request custom branding</span>
+              </label>
               <div className="buy-row">
                 <div className="stepper" aria-label="Quantity">
                   <button type="button" onClick={() => setQty((value) => Math.max(1, value - 1))} aria-label="Decrease quantity">
@@ -201,11 +212,13 @@ export default function Product() {
                 </div>
                 <button
                   type="button"
-                  className="btn-lime"
+                  className="buy-add-icon"
                   disabled={outOfStock}
-                  onClick={() => add(product.id, qty, chosen?.name, product.sizes?.[size])}
+                  aria-label={outOfStock ? "Out of stock" : "Add to cart"}
+                  title={outOfStock ? "Out of stock" : "Add to cart"}
+                  onClick={() => add(product.id, qty, chosen?.name, product.sizes?.[size], branding)}
                 >
-                  {outOfStock ? "Out of stock" : "Add to cart"}
+                  <ShoppingBag size={20} strokeWidth={2.2} />
                 </button>
               </div>
               <p className="buy-note">
@@ -213,7 +226,7 @@ export default function Product() {
                   ? "Currently out of stock"
                   : product.stock != null
                     ? `${product.stock} in stock · MOQ 20 · Confirm on WhatsApp`
-                    : "MOQ 20 · Branding on request · Confirm on WhatsApp"}
+                    : "MOQ 20 · Confirm on WhatsApp"}
               </p>
             </div>
 

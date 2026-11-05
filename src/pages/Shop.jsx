@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { X } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { useCatalog } from "../catalog";
-import { groupsFor, isPaintedColor, resolveCat, shopFilters, swatchIsLight, swatchStyle } from "../data";
+import { groupsFor, isPaintedColor, resolveCat, shopFilters } from "../data";
 import { useTitle } from "../useTitle";
 
 const sections = shopFilters.filter((filter) => filter.id !== "all");
@@ -29,6 +30,7 @@ export default function Shop() {
   const [draft, setDraft] = useState(q);
   const [sort, setSort] = useState("featured");
   const inLine = cat !== "all";
+  const hasFilters = inLine || Boolean(color) || Boolean(q.trim());
 
   useEffect(() => {
     setDraft(q);
@@ -68,6 +70,7 @@ export default function Shop() {
         if (!color) return { product, colorName: "" };
         const match = ways(product).find((option) => matchesColor(option.name, color));
         if (!match) return null;
+        // Seed the card on the filtered colour; palette still lets shoppers pick any colour.
         return { product, colorName: match.name || "" };
       })
       .filter(Boolean);
@@ -97,9 +100,10 @@ export default function Shop() {
     setSearchParams(next);
   }
 
-  function clearSearch() {
+  function clearFilters() {
     setDraft("");
-    setSearchParams(inLine ? { cat } : {});
+    setSort("featured");
+    setSearchParams({});
   }
 
   const heading = q ? `Results for “${q}”` : shopFilters.find((filter) => filter.id === cat)?.label || "Shop";
@@ -128,37 +132,51 @@ export default function Shop() {
         </header>
 
         <div className="shop-tools">
-          {inLine && colorOptions.length > 0 && (
-            <div className="chips color-chips" role="tablist" aria-label="Colour">
-              <button type="button" className={!color ? "chip on" : "chip"} onClick={() => setColor("")}>
-                All colours
-              </button>
-              {colorOptions.map((name) => (
-                <button
-                  key={name}
-                  type="button"
-                  className={color === name ? "chip on chip-tone" : "chip chip-tone"}
-                  onClick={() => setColor(name)}
-                >
-                  <span className={`swatch${swatchIsLight(name) ? " light" : ""}`} style={swatchStyle(name)} />
-                  {name}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className="chips" role="tablist" aria-label="Categories">
-            {shopFilters.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                className={filter.id === cat ? "chip on" : "chip"}
-                onClick={() => setCat(filter.id)}
+          <div className="shop-filter-row">
+            <label className="shop-filter-field">
+              <span className="shop-filter-title">Category</span>
+              <select
+                className="shop-select"
+                value={cat}
+                aria-label="Category"
+                onChange={(event) => setCat(event.target.value)}
               >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-          <div className="shop-find">
+                {shopFilters.map((filter) => (
+                  <option key={filter.id} value={filter.id}>
+                    {filter.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {colorOptions.length > 0 ? (
+              <label className="shop-filter-field">
+                <span className="shop-filter-title">Colour</span>
+                <select
+                  className="shop-select"
+                  value={color}
+                  aria-label="Colour"
+                  onChange={(event) => setColor(event.target.value)}
+                >
+                  <option value="">All colours</option>
+                  {colorOptions.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            <label className="shop-filter-field">
+              <span className="shop-filter-title">Sort</span>
+              <select className="shop-select" value={sort} onChange={(event) => setSort(event.target.value)}>
+                <option value="featured">Featured</option>
+                <option value="low">Price, low to high</option>
+                <option value="high">Price, high to low</option>
+              </select>
+            </label>
+
             <form className="shop-search" onSubmit={submit}>
               <input
                 value={draft}
@@ -170,14 +188,13 @@ export default function Shop() {
                 Search
               </button>
             </form>
-            <label className="sort-label">
-              <span className="sr-only">Sort</span>
-              <select className="sort" value={sort} onChange={(event) => setSort(event.target.value)}>
-                <option value="featured">Featured</option>
-                <option value="low">Price, low to high</option>
-                <option value="high">Price, high to low</option>
-              </select>
-            </label>
+
+            {hasFilters ? (
+              <button type="button" className="shop-clear" onClick={clearFilters}>
+                <X size={14} strokeWidth={2.4} aria-hidden="true" />
+                Clear
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -185,8 +202,8 @@ export default function Shop() {
           <div className="empty">
             <h2>{color ? `Nothing in ${color}.` : "Nothing in that search."}</h2>
             <p className="muted">{color ? "Pick another colour, or show all colours." : "Try another line, or clear it."}</p>
-            <button type="button" className="btn-dark" onClick={() => (color ? setColor("") : clearSearch())}>
-              {color ? "All colours" : "Clear search"}
+            <button type="button" className="btn-dark" onClick={() => (color ? setColor("") : clearFilters())}>
+              {color ? "All colours" : "Clear filters"}
             </button>
           </div>
         ) : (
@@ -203,7 +220,7 @@ export default function Shop() {
               <div className="grid" key={`grid-${revision}-${block.title || "list"}`}>
                 {block.items.map((tile) => (
                   <ProductCard
-                    key={`${tile.product.id}-${tile.colorName || "all"}-${tile.product.price}-${tile.product.stock ?? "x"}-${revision}`}
+                    key={`${tile.product.id}-${tile.product.price}-${tile.product.stock ?? "x"}-${revision}`}
                     product={tile.product}
                     colorName={tile.colorName}
                     showPalette

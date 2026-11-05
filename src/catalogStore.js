@@ -105,14 +105,19 @@ function hydrateColors(product) {
     return seedColors.map((color) => ({ ...color }));
   }
 
+  const liveImages = liveColors.map((color) => color?.image).filter(Boolean);
+  const sharedGroup =
+    liveImages.length > 1 && liveImages.every((image) => image === liveImages[0]);
+
   return liveColors.map((color) => {
     const next = { ...color };
-    if (!next.image) {
-      const match =
-        seedColors.find((item) => item.name === next.name) ||
-        seedColors.find((item) => item.image && item.name?.toLowerCase() === String(next.name || "").toLowerCase());
+    const match =
+      seedColors.find((item) => item.name === next.name) ||
+      seedColors.find((item) => item.image && item.name?.toLowerCase() === String(next.name || "").toLowerCase());
+    if (!next.image || sharedGroup) {
       if (match?.image) next.image = match.image;
     }
+    if (match?.tone && !next.tone) next.tone = match.tone;
     return next;
   });
 }

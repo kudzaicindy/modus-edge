@@ -18,6 +18,7 @@ function CartRow({ item, update, remove }) {
         <div>
           <strong>{item.product.name}</strong>
           {item.size ? <span className="muted">Size {item.size}</span> : null}
+          {item.branding ? <span className="muted">Custom branding</span> : null}
         </div>
       </td>
       <td className="cart-color">{item.color || "—"}</td>
@@ -26,15 +27,27 @@ function CartRow({ item, update, remove }) {
       </td>
       <td className="cart-qty">
         <div className="stepper">
-          <button type="button" onClick={() => update(item.id, item.qty - 1, item.color, item.size)} aria-label="Decrease quantity">
+          <button
+            type="button"
+            onClick={() => update(item.id, item.qty - 1, item.color, item.size, item.branding)}
+            aria-label="Decrease quantity"
+          >
             −
           </button>
           <span>{item.qty}</span>
-          <button type="button" onClick={() => update(item.id, item.qty + 1, item.color, item.size)} aria-label="Increase quantity">
+          <button
+            type="button"
+            onClick={() => update(item.id, item.qty + 1, item.color, item.size, item.branding)}
+            aria-label="Increase quantity"
+          >
             +
           </button>
         </div>
-        <button type="button" className="linkish" onClick={() => remove(item.id, item.color, item.size)}>
+        <button
+          type="button"
+          className="linkish"
+          onClick={() => remove(item.id, item.color, item.size, item.branding)}
+        >
           Remove
         </button>
       </td>

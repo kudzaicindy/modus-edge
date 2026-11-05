@@ -3,6 +3,7 @@ import { Link, Route, Routes, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { CartDrawer, Toast } from "./components/CartDrawer";
+import FloatingWhatsApp from "./components/FloatingWhatsApp";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import Product from "./pages/Product";
@@ -79,6 +80,7 @@ export default function App() {
           <Footer />
           <CartDrawer />
           <Toast />
+          <FloatingWhatsApp />
         </>
       )}
     </>

@@ -1,5 +1,4 @@
 import "dotenv/config";
-import mongoose from "mongoose";
 import app from "./app.js";
 import { connectDb, isDbReady } from "./db.js";
 
@@ -12,7 +11,7 @@ async function ensureDb(label = "startup") {
   }
   if (isDbReady()) return true;
   try {
-    await connectDb();
+    await connectDb(process.env.MONGODB_URI, { force: label === "retry" || label === "startup" });
     console.log(`MongoDB connected (${label})`);
     return true;
   } catch (error) {
@@ -21,24 +20,27 @@ async function ensureDb(label = "startup") {
       console.error(
         "Fix: Atlas → Network Access → Add IP Address → Allow Access from Anywhere (0.0.0.0/0), and confirm the cluster is not paused."
       );
+      console.error("Admin can still sign in with ADMIN_USERNAME / ADMIN_PASSWORD from .env while DB is down (read-only seed catalogue).");
     }
     return false;
   }
 }
 
 async function start() {
-  await ensureDb("startup");
-
+  // Listen immediately so Vite proxy does not 500 while Mongo is still connecting.
   app.listen(port, () => {
     console.log(`Catalogue API on http://localhost:${port}`);
-    console.log(`DB status: ${isDbReady() ? "connected" : "disconnected (using seed fallback for reads)"}`);
+    console.log(`DB status: ${isDbReady() ? "connected" : "connecting / seed fallback"}`);
   });
+
+  await ensureDb("startup");
+  console.log(`DB status: ${isDbReady() ? "connected" : "disconnected (using seed fallback for reads)"}`);
 
   setInterval(() => {
     if (process.env.MONGODB_URI && !isDbReady()) {
       ensureDb("retry");
     }
-  }, 15000);
+  }, 20000);
 }
 
 process.on("uncaughtException", (error) => {

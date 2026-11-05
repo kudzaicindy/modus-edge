@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import ColorPalette from "./ColorPalette";
@@ -26,21 +26,21 @@ function ShopSwatches({ colors, tone, onChange }) {
   );
 }
 
+function toneIndex(colors, colorName) {
+  if (!colorName) return 0;
+  const at = colors.findIndex((option) => option.name === colorName);
+  return at >= 0 ? at : 0;
+}
+
 export default function ProductCard({ product, colorName, showPalette = false, compact = false }) {
   const { add } = useCart();
   const colors = Array.isArray(product.colors) ? product.colors : [];
-  const start = Math.max(
-    0,
-    colors.findIndex((option) => option.name === colorName)
-  );
-  const [tone, setTone] = useState(start);
-  const [activeId, setActiveId] = useState(product.id);
+  const [tone, setTone] = useState(() => toneIndex(colors, colorName));
 
-  // Keep local colour selection when browsing; only jump when the product changes.
-  if (product.id !== activeId) {
-    setActiveId(product.id);
-    setTone(start);
-  }
+  // Jump when the product or shop colour filter changes; local swatch picks stay independent after that.
+  useEffect(() => {
+    setTone(toneIndex(colors, colorName));
+  }, [product.id, colorName]);
 
   const safeTone = Math.min(tone, Math.max(colors.length - 1, 0));
   const chosen = colors[safeTone];

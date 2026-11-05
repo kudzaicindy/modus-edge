@@ -41,33 +41,49 @@ export function CartProvider({ children }) {
   const count = detailed.reduce((sum, item) => sum + item.qty, 0);
   const subtotal = detailed.reduce((sum, item) => sum + item.qty * item.product.price, 0);
 
-  function sameLine(item, id, color, size) {
-    return item.id === id && (item.color || "") === (color || "") && (item.size || "") === (size || "");
+  function sameLine(item, id, color, size, branding) {
+    return (
+      item.id === id &&
+      (item.color || "") === (color || "") &&
+      (item.size || "") === (size || "") &&
+      Boolean(item.branding) === Boolean(branding)
+    );
   }
 
-  function add(id, qty = 1, color, size) {
+  function add(id, qty = 1, color, size, branding = false) {
     const nextQty = Math.min(8, qty);
     setItems((prev) => {
-      const found = prev.find((item) => sameLine(item, id, color, size));
+      const found = prev.find((item) => sameLine(item, id, color, size, branding));
       if (!found) {
-        return [...prev, { id, qty: nextQty, ...(color ? { color } : {}), ...(size ? { size } : {}) }];
+        return [
+          ...prev,
+          {
+            id,
+            qty: nextQty,
+            ...(color ? { color } : {}),
+            ...(size ? { size } : {}),
+            ...(branding ? { branding: true } : {}),
+          },
+        ];
       }
       return prev.map((item) =>
-        sameLine(item, id, color, size) ? { ...item, qty: Math.min(8, item.qty + qty) } : item
+        sameLine(item, id, color, size, branding) ? { ...item, qty: Math.min(8, item.qty + qty) } : item
       );
     });
-    setToast({ id, qty: nextQty, color: color || "", size: size || "" });
+    setToast({ id, qty: nextQty, color: color || "", size: size || "", branding: Boolean(branding) });
   }
 
-  function update(id, qty, color, size) {
+  function update(id, qty, color, size, branding = false) {
     setItems((prev) => {
-      if (qty < 1) return prev.filter((item) => !sameLine(item, id, color, size));
-      return prev.map((item) => (sameLine(item, id, color, size) ? { ...item, qty: Math.min(8, qty) } : item));
+      if (qty < 1) return prev.filter((item) => !sameLine(item, id, color, size, branding));
+      return prev.map((item) =>
+        sameLine(item, id, color, size, branding) ? { ...item, qty: Math.min(8, qty) } : item
+      );
     });
   }
 
-  function remove(id, color, size) {
-    setItems((prev) => prev.filter((item) => !sameLine(item, id, color, size)));
+  function remove(id, color, size, branding = false) {
+    setItems((prev) => prev.filter((item) => !sameLine(item, id, color, size, branding)));
   }
 
   function clear() {
