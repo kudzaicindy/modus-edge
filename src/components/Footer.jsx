@@ -2,8 +2,10 @@ import { Link } from "react-router-dom";
 import { Instagram } from "lucide-react";
 import Mark from "./Mark";
 import { brand } from "../data";
+import { whatsappLinks } from "../order";
 
 export default function Footer() {
+  const wa = whatsappLinks(`Hello ${brand.name}, I have a question about the catalogue.`);
   return (
     <footer className="site-footer">
       <div className="wrap foot-bar">
@@ -18,6 +20,11 @@ export default function Footer() {
           </a>
         ))}
         <a href={`mailto:${brand.email}`}>{brand.email}</a>
+        {wa.map((line) => (
+          <a key={line.id} href={line.href} target="_blank" rel="noreferrer">
+            WhatsApp {line.display}
+          </a>
+        ))}
         {brand.instagram ? (
           <a
             className="social-icon-link"

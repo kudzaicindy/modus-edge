@@ -41,7 +41,7 @@ export default function About() {
             </p>
             <p>
               Custom marks on shirts and caps are handled as a service. Add the pieces you want, then send the list on
-              WhatsApp. Call +263716055533 or +263783055893, or email modusedgezw@gmail.com. The site does not charge a
+              WhatsApp to 0786209200 or 0716055533. Call +263716055533 or +263783055893, or email admin@modusedge.co.zw. The site does not charge a
               card.
             </p>
             <Link to="/contact" className="btn-dark">

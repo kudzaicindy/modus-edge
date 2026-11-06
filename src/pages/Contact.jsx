@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Instagram } from "lucide-react";
 import Mark from "../components/Mark";
 import { brand } from "../data";
-import { whatsappHref } from "../order";
+import { whatsappLinks } from "../order";
 import { useTitle } from "../useTitle";
 
 export default function Contact() {
@@ -44,9 +44,11 @@ export default function Contact() {
               </a>
             ))}
             <a href={`mailto:${brand.email}`}>{brand.email}</a>
-            <a href={whatsappHref("Hello MODUS-EDGE, I have a question about the catalogue.")}>
-              WhatsApp {brand.whatsappDisplay}
-            </a>
+            {whatsappLinks("Hello MODUS-EDGE, I have a question about the catalogue.").map((line) => (
+              <a key={line.id} href={line.href} target="_blank" rel="noreferrer">
+                WhatsApp {line.display}
+              </a>
+            ))}
             {brand.instagram ? (
               <a
                 className="social-icon-link contact-social"

@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { useCatalog } from "../catalog";
 import { money } from "../data";
 import { useCart } from "../cart";
-import { listMessage, whatsappHref } from "../order";
+import { listMessage, whatsappLinks } from "../order";
 
 function linePhoto(item) {
   return item.product.colors?.find((option) => option.name === item.color)?.image || item.product.image;
@@ -144,9 +144,17 @@ export function CartDrawer() {
                 onChange={(event) => setName(event.target.value)}
               />
             </label>
-            <a className="btn-lime" href={whatsappHref(message)} target="_blank" rel="noreferrer">
-              Send list on WhatsApp
-            </a>
+            {whatsappLinks(message).map((line) => (
+              <a
+                key={line.id}
+                className="btn-lime"
+                href={line.href}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Send list on WhatsApp {line.display}
+              </a>
+            ))}
             <p className="muted">The message already lists these pieces and the seller's prices. The seller confirms the order.</p>
           </div>
         )}

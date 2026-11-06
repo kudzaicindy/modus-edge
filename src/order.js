@@ -28,6 +28,17 @@ export function listMessage(items, name) {
   ].join("\n");
 }
 
-export function whatsappHref(text) {
-  return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`;
+export function whatsappHref(text, number = brand.whatsapp) {
+  const id = String(number || brand.whatsapp).replace(/\D/g, "");
+  return `https://wa.me/${id}?text=${encodeURIComponent(text)}`;
+}
+
+export function whatsappLinks(text) {
+  const list = Array.isArray(brand.whatsappNumbers) && brand.whatsappNumbers.length
+    ? brand.whatsappNumbers
+    : [{ id: brand.whatsapp, display: brand.whatsappDisplay }];
+  return list.map((entry) => ({
+    ...entry,
+    href: whatsappHref(text, entry.id),
+  }));
 }
