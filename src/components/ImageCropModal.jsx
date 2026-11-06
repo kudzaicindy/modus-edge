@@ -146,6 +146,16 @@ export default function ImageCropModal({ src, title, onCancel, onApply }) {
       }
     : null;
 
+  const preview =
+    rect && rect.w >= 8 && rect.h >= 8 && natural.w
+      ? {
+          backgroundImage: `url(${src})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: `${(natural.w / rect.w) * 100}% ${(natural.h / rect.h) * 100}%`,
+          backgroundPosition: `${(-rect.x / rect.w) * 100}% ${(-rect.y / rect.h) * 100}%`,
+        }
+      : null;
+
   return (
     <div className="crop-modal" role="dialog" aria-modal="true" aria-label="Crop picture">
       <div className="crop-modal-card">
@@ -154,7 +164,7 @@ export default function ImageCropModal({ src, title, onCancel, onApply }) {
             <p className="admin-kicker">Crop colour</p>
             <h3>{title || "Pick one item"}</h3>
             <p className="muted">
-              Drag around one colour, or tap a column if the photo shows several side by side.
+              Frame <strong>one</strong> item only. Use Quick split for side-by-side lineups, then tap the column you want.
             </p>
           </div>
           <button type="button" className="btn-ghost-ink" onClick={onCancel}>
@@ -239,11 +249,18 @@ export default function ImageCropModal({ src, title, onCancel, onApply }) {
             : null}
         </div>
 
+        {preview ? (
+          <div className="crop-preview-row">
+            <span>Result preview</span>
+            <div className="crop-preview" style={preview} aria-hidden="true" />
+          </div>
+        ) : null}
+
         <div className="crop-modal-actions">
           <button type="button" className="btn-ghost-ink" onClick={onCancel} disabled={busy}>
             Cancel
           </button>
-          <button type="button" className="btn-lime" onClick={apply} disabled={busy || !rect}>
+          <button type="button" className="btn-lime" onClick={apply} disabled={busy || !rect || rect.w < 8}>
             {busy ? "Cropping…" : "Use cropped picture"}
           </button>
         </div>

@@ -1,285 +1,655 @@
 {
-  "midu-b06": [
-    {
-      "name": "Pink",
-      "image": "/images/midu/colors/midu-b06-pink.jpg",
-      "box": [
-        0,
-        169,
-        348,
-        750
-      ]
-    },
-    {
-      "name": "Tan",
-      "image": "/images/midu/colors/midu-b06-tan.jpg",
-      "box": [
-        340,
-        167,
-        750,
-        750
-      ]
-    }
-  ],
   "midu-b19": [
-    {
-      "name": "Rose gold",
-      "image": "/images/midu/colors/midu-b19-rose-gold.jpg",
-      "box": [
-        0,
-        513,
-        930,
-        1280
-      ]
-    },
     {
       "name": "Silver",
       "image": "/images/midu/colors/midu-b19-silver.jpg",
       "box": [
         0,
         0,
-        253,
-        327
+        180,
+        225
       ]
     },
     {
-      "name": "Rose gold 2",
-      "image": "/images/midu/colors/midu-b19-rose-gold-2.jpg",
+      "name": "Black",
+      "image": "/images/midu/colors/midu-b19-black.jpg",
       "box": [
-        594,
-        366,
-        965,
-        790
+        395,
+        299,
+        564,
+        462
       ]
     }
   ],
-  "midu-bg04": [
+  "midu-b22c": [
     {
-      "name": "Sky",
-      "image": "/images/midu/colors/midu-bg04-sky.jpg",
+      "name": "Black",
+      "image": "/images/midu/colors/midu-b22c-black.jpg",
       "box": [
-        0,
-        0,
-        370,
-        504
+        53,
+        292,
+        199,
+        713
       ]
     },
     {
-      "name": "Sky 2",
-      "image": "/images/midu/colors/midu-bg04-sky-2.jpg",
+      "name": "Brown",
+      "image": "/images/midu/colors/midu-b22c-brown.jpg",
       "box": [
-        0,
-        596,
-        152,
-        800
+        244,
+        180,
+        313,
+        254
       ]
     },
     {
-      "name": "Sky 3",
-      "image": "/images/midu/colors/midu-bg04-sky-3.jpg",
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-b22c-silver.jpg",
       "box": [
-        115,
-        275,
+        491,
         321,
-        572
-      ]
-    },
-    {
-      "name": "Sky 4",
-      "image": "/images/midu/colors/midu-bg04-sky-4.jpg",
-      "box": [
-        143,
-        0,
-        800,
-        800
-      ]
-    },
-    {
-      "name": "Sky 5",
-      "image": "/images/midu/colors/midu-bg04-sky-5.jpg",
-      "box": [
-        272,
-        0,
-        376,
-        150
+        610,
+        618
       ]
     }
   ],
-  "midu-bh12": [
-    {
-      "name": "Charcoal",
-      "image": "/images/midu/colors/midu-bh12-charcoal.jpg",
-      "box": [
-        27,
-        316,
-        363,
-        693
-      ]
-    },
-    {
-      "name": "Tan",
-      "image": "/images/midu/colors/midu-bh12-tan.jpg",
-      "box": [
-        134,
-        549,
-        800,
-        800
-      ]
-    },
-    {
-      "name": "Charcoal 2",
-      "image": "/images/midu/colors/midu-bh12-charcoal-2.jpg",
-      "box": [
-        220,
-        112,
-        502,
-        479
-      ]
-    },
-    {
-      "name": "Tan 2",
-      "image": "/images/midu/colors/midu-bh12-tan-2.jpg",
-      "box": [
-        356,
-        188,
-        800,
-        560
-      ]
-    },
-    {
-      "name": "Copper",
-      "image": "/images/midu/colors/midu-bh12-copper.jpg",
-      "box": [
-        700,
-        13,
-        800,
-        212
-      ]
-    }
-  ],
-  "midu-gs603": [
+  "midu-b32": [
     {
       "name": "Rose gold",
-      "image": "/images/midu/colors/midu-gs603-rose-gold.jpg",
+      "image": "/images/midu/colors/midu-b32-rose-gold.jpg",
+      "box": [
+        486,
+        64,
+        555,
+        121
+      ]
+    },
+    {
+      "name": "Black",
+      "image": "/images/midu/colors/midu-b32-black.jpg",
+      "box": [
+        521,
+        263,
+        590,
+        307
+      ]
+    }
+  ],
+  "midu-cup23": [
+    {
+      "name": "Rose gold",
+      "image": "/images/midu/colors/midu-cup23-rose-gold.jpg",
+      "box": [
+        102,
+        368,
+        384,
+        707
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-cup23-silver.jpg",
+      "box": [
+        143,
+        164,
+        301,
+        452
+      ]
+    },
+    {
+      "name": "White",
+      "image": "/images/midu/colors/midu-cup23-white.jpg",
+      "box": [
+        360,
+        197,
+        506,
+        374
+      ]
+    }
+  ],
+  "midu-cup25": [
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-cup25-silver.jpg",
       "box": [
         0,
         0,
-        646,
-        800
+        30,
+        41
       ]
     },
     {
       "name": "Charcoal",
-      "image": "/images/midu/colors/midu-gs603-charcoal.jpg",
+      "image": "/images/midu/colors/midu-cup25-charcoal.jpg",
       "box": [
-        446,
+        32,
+        362,
+        284,
+        682
+      ]
+    },
+    {
+      "name": "Wood",
+      "image": "/images/midu/colors/midu-cup25-wood.jpg",
+      "box": [
+        253,
+        380,
+        421,
+        683
+      ]
+    },
+    {
+      "name": "Yellow",
+      "image": "/images/midu/colors/midu-cup25-yellow.jpg",
+      "box": [
+        265,
+        274,
+        414,
+        407
+      ]
+    },
+    {
+      "name": "Rose gold",
+      "image": "/images/midu/colors/midu-cup25-rose-gold.jpg",
+      "box": [
+        657,
+        323,
+        793,
+        607
+      ]
+    }
+  ],
+  "midu-cup26a": [
+    {
+      "name": "Rose gold",
+      "image": "/images/midu/colors/midu-cup26a-rose-gold.jpg",
+      "box": [
+        264,
+        117,
+        524,
+        768
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-cup26a-silver.jpg",
+      "box": [
+        287,
+        82,
+        354,
+        174
+      ]
+    }
+  ],
+  "midu-hat04": [
+    {
+      "name": "Wood",
+      "image": "/images/midu/colors/midu-hat04-wood.jpg",
+      "box": [
         0,
+        293,
+        72,
+        354
+      ]
+    },
+    {
+      "name": "Orange",
+      "image": "/images/midu/colors/midu-hat04-orange.jpg",
+      "box": [
+        0,
+        244,
+        72,
+        302
+      ]
+    },
+    {
+      "name": "Black",
+      "image": "/images/midu/colors/midu-hat04-black.jpg",
+      "box": [
+        56,
+        243,
+        135,
+        305
+      ]
+    },
+    {
+      "name": "Red",
+      "image": "/images/midu/colors/midu-hat04-red.jpg",
+      "box": [
+        63,
+        295,
+        139,
+        353
+      ]
+    },
+    {
+      "name": "Yellow",
+      "image": "/images/midu/colors/midu-hat04-yellow.jpg",
+      "box": [
+        126,
+        294,
+        202,
+        354
+      ]
+    },
+    {
+      "name": "Charcoal",
+      "image": "/images/midu/colors/midu-hat04-charcoal.jpg",
+      "box": [
+        182,
+        242,
+        264,
+        303
+      ]
+    },
+    {
+      "name": "Blue",
+      "image": "/images/midu/colors/midu-hat04-blue.jpg",
+      "box": [
+        186,
+        295,
+        266,
+        355
+      ]
+    }
+  ],
+  "midu-kc37": [
+    {
+      "name": "Black",
+      "image": "/images/midu/colors/midu-kc37-black.jpg",
+      "box": [
+        271,
+        35,
+        306,
+        94
+      ]
+    },
+    {
+      "name": "Charcoal",
+      "image": "/images/midu/colors/midu-kc37-charcoal.jpg",
+      "box": [
+        299,
+        34,
+        336,
+        85
+      ]
+    }
+  ],
+  "midu-lst01": [
+    {
+      "name": "Wood",
+      "image": "/images/midu/colors/midu-lst01-wood.jpg",
+      "box": [
+        152,
+        62,
+        219,
+        155
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-lst01-silver.jpg",
+      "box": [
+        154,
+        0,
+        219,
+        81
+      ]
+    }
+  ],
+  "midu-lst04": [
+    {
+      "name": "Red",
+      "image": "/images/midu/colors/midu-lst04-red.jpg",
+      "box": [
+        89,
+        112,
+        262,
+        789
+      ]
+    },
+    {
+      "name": "Black",
+      "image": "/images/midu/colors/midu-lst04-black.jpg",
+      "box": [
+        289,
+        44,
+        502,
+        325
+      ]
+    }
+  ],
+  "midu-mp29b": [
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-mp29b-silver.jpg",
+      "box": [
+        0,
+        544,
+        72,
+        800
+      ]
+    },
+    {
+      "name": "Wood",
+      "image": "/images/midu/colors/midu-mp29b-wood.jpg",
+      "box": [
+        325,
+        27,
+        549,
+        759
+      ]
+    }
+  ],
+  "midu-mp52": [
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-mp52-silver.jpg",
+      "box": [
+        0,
+        21,
+        130,
+        800
+      ]
+    },
+    {
+      "name": "Wood",
+      "image": "/images/midu/colors/midu-mp52-wood.jpg",
+      "box": [
+        252,
+        287,
+        291,
+        745
+      ]
+    }
+  ],
+  "midu-pb401a": [
+    {
+      "name": "White",
+      "image": "/images/midu/colors/midu-pb401a-white.jpg",
+      "box": [
+        0,
+        723,
+        121,
+        800
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-pb401a-silver.jpg",
+      "box": [
+        638,
+        85,
         800,
-        692
+        177
       ]
     }
   ],
   "midu-pb406": [
     {
-      "name": "Rose gold",
-      "image": "/images/midu/colors/midu-pb406-rose-gold.jpg",
+      "name": "White",
+      "image": "/images/midu/colors/midu-pb406-white.jpg",
       "box": [
-        24,
-        422,
-        717,
-        728
+        124,
+        666,
+        325,
+        739
       ]
     },
     {
-      "name": "Charcoal",
-      "image": "/images/midu/colors/midu-pb406-charcoal.jpg",
+      "name": "Black",
+      "image": "/images/midu/colors/midu-pb406-black.jpg",
       "box": [
-        117,
-        645,
-        338,
-        764
-      ]
-    },
-    {
-      "name": "Charcoal 2",
-      "image": "/images/midu/colors/midu-pb406-charcoal-2.jpg",
-      "box": [
-        431,
-        30,
-        720,
-        222
-      ]
-    },
-    {
-      "name": "Charcoal 3",
-      "image": "/images/midu/colors/midu-pb406-charcoal-3.jpg",
-      "box": [
-        434,
-        214,
-        718,
-        283
-      ]
-    },
-    {
-      "name": "Charcoal 4",
-      "image": "/images/midu/colors/midu-pb406-charcoal-4.jpg",
-      "box": [
-        435,
-        274,
-        717,
-        323
-      ]
-    },
-    {
-      "name": "Charcoal 5",
-      "image": "/images/midu/colors/midu-pb406-charcoal-5.jpg",
-      "box": [
-        435,
-        315,
-        717,
-        409
-      ]
-    },
-    {
-      "name": "Charcoal 6",
-      "image": "/images/midu/colors/midu-pb406-charcoal-6.jpg",
-      "box": [
-        437,
-        401,
-        717,
-        475
+        671,
+        707,
+        795,
+        776
       ]
     }
   ],
-  "midu-wc08": [
+  "midu-pbn019b": [
     {
-      "name": "Rose gold",
-      "image": "/images/midu/colors/midu-wc08-rose-gold.jpg",
+      "name": "Charcoal",
+      "image": "/images/midu/colors/midu-pbn019b-charcoal.jpg",
       "box": [
+        416,
         0,
-        176,
-        372,
+        601,
+        63
+      ]
+    },
+    {
+      "name": "Brown",
+      "image": "/images/midu/colors/midu-pbn019b-brown.jpg",
+      "box": [
+        524,
+        149,
+        601,
+        254
+      ]
+    }
+  ],
+  "midu-phd16": [
+    {
+      "name": "Black",
+      "image": "/images/midu/colors/midu-phd16-black.jpg",
+      "box": [
+        56,
+        399,
+        170,
         768
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-phd16-silver.jpg",
+      "box": [
+        540,
+        348,
+        729,
+        553
+      ]
+    }
+  ],
+  "midu-pp130": [
+    {
+      "name": "Green",
+      "image": "/images/midu/colors/midu-pp130-green.jpg",
+      "box": [
+        103,
+        0,
+        185,
+        795
+      ]
+    },
+    {
+      "name": "Yellow",
+      "image": "/images/midu/colors/midu-pp130-yellow.jpg",
+      "box": [
+        289,
+        222,
+        353,
+        769
+      ]
+    },
+    {
+      "name": "Sky",
+      "image": "/images/midu/colors/midu-pp130-sky.jpg",
+      "box": [
+        375,
+        220,
+        440,
+        773
+      ]
+    },
+    {
+      "name": "Teal",
+      "image": "/images/midu/colors/midu-pp130-teal.jpg",
+      "box": [
+        532,
+        0,
+        611,
+        800
+      ]
+    },
+    {
+      "name": "Red",
+      "image": "/images/midu/colors/midu-pp130-red.jpg",
+      "box": [
+        618,
+        0,
+        696,
+        790
+      ]
+    },
+    {
+      "name": "Blue",
+      "image": "/images/midu/colors/midu-pp130-blue.jpg",
+      "box": [
+        702,
+        0,
+        781,
+        792
+      ]
+    }
+  ],
+  "midu-ub11": [
+    {
+      "name": "Navy",
+      "image": "/images/midu/colors/midu-ub11-navy.jpg",
+      "box": [
+        292,
+        253,
+        340,
+        424
+      ]
+    },
+    {
+      "name": "Black",
+      "image": "/images/midu/colors/midu-ub11-black.jpg",
+      "box": [
+        366,
+        232,
+        414,
+        412
+      ]
+    }
+  ],
+  "midu-ub30": [
+    {
+      "name": "Tan",
+      "image": "/images/midu/colors/midu-ub30-tan.jpg",
+      "box": [
+        353,
+        163,
+        459,
+        208
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-ub30-silver.jpg",
+      "box": [
+        604,
+        619,
+        675,
+        736
+      ]
+    }
+  ],
+  "midu-ud17": [
+    {
+      "name": "Blue",
+      "image": "/images/midu/colors/midu-ud17-blue.jpg",
+      "box": [
+        154,
+        239,
+        314,
+        362
+      ]
+    },
+    {
+      "name": "Wood",
+      "image": "/images/midu/colors/midu-ud17-wood.jpg",
+      "box": [
+        281,
+        623,
+        420,
+        747
+      ]
+    },
+    {
+      "name": "Black",
+      "image": "/images/midu/colors/midu-ud17-black.jpg",
+      "box": [
+        473,
+        239,
+        608,
+        366
+      ]
+    },
+    {
+      "name": "Copper",
+      "image": "/images/midu/colors/midu-ud17-copper.jpg",
+      "box": [
+        502,
+        371,
+        745,
+        797
+      ]
+    }
+  ],
+  "midu-wch28": [
+    {
+      "name": "Navy",
+      "image": "/images/midu/colors/midu-wch28-navy.jpg",
+      "box": [
+        408,
+        455,
+        547,
+        612
       ]
     },
     {
       "name": "Charcoal",
-      "image": "/images/midu/colors/midu-wc08-charcoal.jpg",
+      "image": "/images/midu/colors/midu-wch28-charcoal.jpg",
       "box": [
-        352,
-        38,
-        732,
-        287
+        558,
+        65,
+        590,
+        101
       ]
     },
     {
-      "name": "Rose gold 2",
-      "image": "/images/midu/colors/midu-wc08-rose-gold-2.jpg",
+      "name": "Black",
+      "image": "/images/midu/colors/midu-wch28-black.jpg",
       "box": [
-        363,
-        214,
-        788,
-        768
+        640,
+        455,
+        777,
+        612
+      ]
+    }
+  ],
+  "midu-wcp02": [
+    {
+      "name": "Yellow",
+      "image": "/images/midu/colors/midu-wcp02-yellow.jpg",
+      "box": [
+        0,
+        442,
+        100,
+        600
+      ]
+    },
+    {
+      "name": "Silver",
+      "image": "/images/midu/colors/midu-wcp02-silver.jpg",
+      "box": [
+        604,
+        0,
+        670,
+        141
       ]
     }
   ]

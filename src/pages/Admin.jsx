@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   Check,
+  Crop,
   Download,
   Eye,
   EyeOff,
@@ -831,12 +832,23 @@ export default function Admin() {
                 <h3>Pictures</h3>
                 <div className="admin-media">
                   <div className="admin-media-main">
-                    <img src={form.image || "/images/polo-navy.png"} alt="" />
+                    <button
+                      type="button"
+                      className="admin-media-thumb"
+                      onClick={() => openCropperFromSrc(form.image || "/images/polo-navy.png", undefined)}
+                      title="Crop main picture"
+                      aria-label="Crop main picture"
+                    >
+                      <img src={form.image || "/images/polo-navy.png"} alt="" />
+                      <span className="admin-media-thumb-label">
+                        <Crop size={14} /> Crop
+                      </span>
+                    </button>
                     <div>
                       <p>Main picture</p>
                       <div className="admin-media-actions">
                         <label className="btn-dark admin-upload">
-                          <Upload size={16} /> Upload & crop
+                          <Upload size={16} /> Upload
                           <input
                             type="file"
                             accept="image/*"
@@ -851,9 +863,9 @@ export default function Admin() {
                         <button
                           type="button"
                           className="btn-ghost-ink"
-                          onClick={() => openCropperFromSrc(form.image, undefined)}
+                          onClick={() => openCropperFromSrc(form.image || "/images/polo-navy.png", undefined)}
                         >
-                          Crop current
+                          <Crop size={14} /> Crop
                         </button>
                       </div>
                       <input
@@ -867,17 +879,23 @@ export default function Admin() {
                   <div className="admin-colors">
                     <h4>Colour pictures</h4>
                     <p className="muted admin-color-hint">
-                      Upload a lineup if you must, then crop to one colour. Shoppers should never see four colours in one shot.
+                      Click a colour photo or Crop to trim one item from a lineup. Upload opens the cropper too.
                     </p>
                     {(form.colors || []).map((color, index) => (
                       <div key={`${index}-${color.name}`} className="admin-color-row">
-                        {color.image ? (
-                          <img src={color.image} alt="" />
-                        ) : (
-                          <div className="admin-color-empty" title="Needs its own cropped photo">
-                            ?
-                          </div>
-                        )}
+                        <button
+                          type="button"
+                          className="admin-color-thumb"
+                          onClick={() => openCropperFromSrc(color.image || form.image, index)}
+                          title={`Crop ${color.name}`}
+                          aria-label={`Crop ${color.name}`}
+                        >
+                          {color.image ? (
+                            <img src={color.image} alt="" />
+                          ) : (
+                            <span className="admin-color-empty">?</span>
+                          )}
+                        </button>
                         <input
                           className="admin-color-name"
                           defaultValue={color.name}
@@ -902,7 +920,7 @@ export default function Admin() {
                           className="btn-ghost-ink"
                           onClick={() => openCropperFromSrc(color.image || form.image, index)}
                         >
-                          Crop
+                          <Crop size={14} /> Crop
                         </button>
                         <button
                           type="button"

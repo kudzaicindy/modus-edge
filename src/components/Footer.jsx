@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Instagram } from "lucide-react";
 import Mark from "./Mark";
 import { brand } from "../data";
 
@@ -18,8 +19,15 @@ export default function Footer() {
         ))}
         <a href={`mailto:${brand.email}`}>{brand.email}</a>
         {brand.instagram ? (
-          <a href={brand.instagram} target="_blank" rel="noreferrer">
-            Instagram {brand.instagramHandle}
+          <a
+            className="social-icon-link"
+            href={brand.instagram}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Instagram ${brand.instagramHandle || ""}`.trim()}
+            title={brand.instagramHandle || "Instagram"}
+          >
+            <Instagram size={18} strokeWidth={1.8} aria-hidden="true" />
           </a>
         ) : null}
         <span className="foot-copy">© 2026 {brand.name}</span>

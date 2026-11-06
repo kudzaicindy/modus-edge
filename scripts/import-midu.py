@@ -238,12 +238,12 @@ def product_js(item: dict) -> str:
     colors: [{{ name: "As shown", image: "{image}" }}],
     blurb: "{blurb}",
     details: "{details}",
-    highlights: ["Corporate gift", "Logo ready", "Model {model}"],
+    highlights: ["Corporate gift", "Logo ready", "Blank for mark"],
     specs: [
-      ["Model", "{model}"],
-      ["Source", "MIDU"],
       ["Mark", "Logo print"],
-      ["MOQ", "Factory"],
+      ["Use", "Corporate gift"],
+      ["Colours", "As shown / on request"],
+      ["Brand", "Ask desk"],
     ],
   }}"""
 
@@ -285,10 +285,10 @@ def main():
                 "group": group,
                 "price": price,
                 "image": f"/images/midu/{fname}",
-                "blurb": f"{card['title']} — corporate gift ready for a logo mark.",
+                "blurb": f"{card['title']} — ready for a logo mark.",
                 "details": (
-                    f"Factory model {card['model']} from the MIDU corporate gift line. "
-                    f"Blank areas take a company mark. Ask the desk for colour and branding options."
+                    "Blank areas take a company mark. "
+                    "Ask the desk for colour and branding options."
                 ),
                 "category": cat,
             }

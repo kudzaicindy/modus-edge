@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Instagram } from "lucide-react";
 import Mark from "../components/Mark";
 import { brand } from "../data";
 import { whatsappHref } from "../order";
@@ -47,8 +48,15 @@ export default function Contact() {
               WhatsApp {brand.whatsappDisplay}
             </a>
             {brand.instagram ? (
-              <a href={brand.instagram} target="_blank" rel="noreferrer">
-                Instagram {brand.instagramHandle}
+              <a
+                className="social-icon-link contact-social"
+                href={brand.instagram}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Instagram ${brand.instagramHandle || ""}`.trim()}
+                title={brand.instagramHandle || "Instagram"}
+              >
+                <Instagram size={22} strokeWidth={1.8} aria-hidden="true" />
               </a>
             ) : null}
           </div>
