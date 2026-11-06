@@ -151,8 +151,9 @@ export function CartDrawer() {
                 href={line.href}
                 target="_blank"
                 rel="noreferrer"
+                aria-label={`Send list on WhatsApp ${line.display}`}
               >
-                Send list on WhatsApp {line.display}
+                Send list on WhatsApp
               </a>
             ))}
             <p className="muted">The message already lists these pieces and the seller's prices. The seller confirms the order.</p>

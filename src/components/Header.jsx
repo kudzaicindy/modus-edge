@@ -7,7 +7,7 @@ import { shopFilters as seedShopFilters } from "../data";
 import { useCart } from "../cart";
 
 const links = [
-  { to: "/services", label: "Services" },
+  { to: "/services", label: "Branding" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ];

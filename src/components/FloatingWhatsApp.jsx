@@ -24,7 +24,7 @@ export default function FloatingWhatsApp() {
               />
             </svg>
           </span>
-          <span className="wa-float-tip">WhatsApp {line.display}</span>
+          <span className="wa-float-tip">Chat on WhatsApp</span>
         </a>
       ))}
     </div>

@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
-import { Instagram } from "lucide-react";
+import { Heart, Instagram } from "lucide-react";
 import Mark from "./Mark";
 import { brand } from "../data";
-import { whatsappLinks } from "../order";
+import { whatsappHref } from "../order";
 
 export default function Footer() {
-  const wa = whatsappLinks(`Hello ${brand.name}, I have a question about the catalogue.`);
+  const cindyWa = whatsappHref("Hello Cindy, I found your work on MODUS-EDGE.", "263786209200");
   return (
     <footer className="site-footer">
       <div className="wrap foot-bar">
@@ -20,11 +20,6 @@ export default function Footer() {
           </a>
         ))}
         <a href={`mailto:${brand.email}`}>{brand.email}</a>
-        {wa.map((line) => (
-          <a key={line.id} href={line.href} target="_blank" rel="noreferrer">
-            WhatsApp {line.display}
-          </a>
-        ))}
         {brand.instagram ? (
           <a
             className="social-icon-link"
@@ -38,6 +33,9 @@ export default function Footer() {
           </a>
         ) : null}
         <span className="foot-copy">© 2026 {brand.name}</span>
+        <a className="foot-credit" href={cindyWa} target="_blank" rel="noreferrer">
+          Made with <Heart className="foot-heart" size={12} strokeWidth={0} fill="currentColor" aria-hidden="true" /> by Cindy
+        </a>
       </div>
     </footer>
   );
