@@ -37,7 +37,6 @@ export default function Contact() {
               {brand.name}
             </p>
             <p className="swing-banner">Swing-Elegance</p>
-            <p>{brand.address}</p>
             {brand.phones.map((phone) => (
               <a key={phone} href={`tel:${phone}`}>
                 {phone}

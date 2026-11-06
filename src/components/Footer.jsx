@@ -13,7 +13,6 @@ export default function Footer() {
           <Mark />
           {brand.name}
         </Link>
-        <span>{brand.address}</span>
         {brand.phones.map((phone) => (
           <a key={phone} href={`tel:${phone}`}>
             {phone}

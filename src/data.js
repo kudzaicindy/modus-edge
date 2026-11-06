@@ -1,14 +1,11 @@
 export const brand = {
   name: "MODUS-EDGE",
   email: "admin@modusedge.co.zw",
-  address: "821 Ferguson Avenue, Greendale",
+  address: "",
   phones: ["0716055533", "0783055893"],
   whatsapp: "263783055893",
   whatsappDisplay: "0783055893",
-  whatsappNumbers: [
-    { id: "263783055893", display: "0783055893" },
-    { id: "263716055533", display: "0716055533" },
-  ],
+  whatsappNumbers: [{ id: "263783055893", display: "0783055893" }],
   instagram: "https://www.instagram.com/swing_elegance_/",
   instagramHandle: "@swing_elegance_",
 };
@@ -6411,17 +6408,6 @@ export const collections = [
     to: "/shop?cat=promo",
     image: "/images/gift-mini-fan-navy.png",
   },
-];
-
-export const partners = [
-  "Ridge Club",
-  "Northwind",
-  "Cedar Links",
-  "Pineside",
-  "Alto Range",
-  "Fairway Desk",
-  "Greenroom",
-  "Harare Loop",
 ];
 
 export const posts = [

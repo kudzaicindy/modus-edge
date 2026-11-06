@@ -2,11 +2,22 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import { useCatalog } from "../catalog";
-import { collections, partners } from "../data";
+import { collections } from "../data";
 import { useTitle } from "../useTitle";
 
 const pickIds = ["polo", "piped-polo", "handle-bottle", "tour-visor"];
 const linePreview = collections.slice(0, 4);
+
+const tickerLines = [
+  "Golf wear",
+  "Corporate gifts",
+  "The desk",
+  "WhatsApp order",
+  "Your mark on it",
+  "Polos & kits",
+  "Power notebooks",
+  "Tournament ready",
+];
 
 const steps = [
   {
@@ -140,12 +151,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="trusted" aria-label="Clubs and companies">
-        <p>Trusted by these clubs</p>
+      <section className="home-ticker" aria-label="MODUS-EDGE lines">
         <div className="marquee">
           <div className="marquee-track">
-            {[...partners, ...partners].map((name, nameIndex) => (
-              <span key={`${name}-${nameIndex}`}>{name}</span>
+            {[...tickerLines, ...tickerLines].map((line, lineIndex) => (
+              <span key={`${line}-${lineIndex}`}>{line}</span>
             ))}
           </div>
         </div>
